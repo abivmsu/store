@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Store Entry{% endblock %}
+
+{% block content %}
+  <h2>Create Store Entry</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    
+    <p><a href="{% url 'create_book' %}?next={% url 'index' %}">Add a Book</a></p>
+  <p><a href="{% url 'create_item' %}?next={% url 'index' %}">Add an Item</a></p>
+    <button type="submit" class="btn btn-success">Create Store Entry</button>
+  </form>
+
+{% endblock %}
