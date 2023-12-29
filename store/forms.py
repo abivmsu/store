@@ -55,12 +55,12 @@ class CategoryForm(forms.ModelForm):
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['category', 'book_name', 'grade', 'pages', 'subject']
+        fields = ['category', 'book_name', 'description', 'grade', 'pages', 'subject','image']
 
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['category', 'item_name']
+        fields = ['category', 'item_name','description','image']
 
 class StoreForm(forms.ModelForm):
     class Meta:

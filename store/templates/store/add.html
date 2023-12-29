@@ -1,0 +1,130 @@
+{% extends 'base.html' %} 
+{% block title %}Andelus | Store{% endblock %} 
+{% block content %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+   <!-- Page Heading -->
+   <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     {% if page == 'book' %}
+     <h1 class="h3 mb-0 text-gray-800">Books </h1>
+     <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+      class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
+      {% elif page == 'item' %}
+      <h1 class="h3 mb-0 text-gray-800">Items</h1>
+    <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+            class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
+    {% endif %}
+</div>
+
+
+<!-- Content Row -->
+<div class="row">
+  {% if page == 'book' %}
+      {% for book in books %}
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                  <a href="{% url 'gebi_book_detail' %}" class="nav-link">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                             {{book.description}}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ book.book_name}}</div>
+                        </div>
+                        <div class="col-auto">
+                          <img class="img-profile rounded-circle"
+                          src="{{boo3k.image.url}}">
+                        </div>
+                    </div>
+                  </a>
+                </div>
+            </div>
+        </div>
+      {% endfor %}
+
+  {% elif page == 'item' %}
+
+    {% for item in items %}
+      <!-- Earnings (Monthly) Card Example -->
+      <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-info shadow h-100 py-2">
+              <div class="card-body">
+                <a href="#" class="nav-link">
+                  <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            {{item.category}}</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">{{ item.item_name}}</div>
+                      </div>
+                      <div class="col-auto">
+                        <img class="img-profile rounded-circle"
+                        src="{{itedm.image.url}}">
+                      </div>
+                  </div>
+                </a>
+              </div>
+          </div>
+      </div>
+
+  {%endfor%}
+
+  {% endif %}
+</div>
+</div>
+<!-- /.container-fluid -->
+
+
+    <!-- add book Modal form-->
+    <div class="modal fade" id="add_new_book" tabindex="-1" role="dialog" aria-labelledby="add_newb"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add_newb">Add new Book </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Fill the following form to add Book.</div>
+                <form method="post"  enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ book_form.as_p }}
+                  
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit" >Add</button>
+                </div>
+              </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- add item Modal form-->
+    <div class="modal fade" id="add_new_item" tabindex="-1" role="dialog" aria-labelledby="add_newi"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add_newi">Add new item </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Fill the following form to add Book.</div>
+                <form method="post"  enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ item_form.as_p }}
+                  
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit" >Add</button>
+                </div>
+              </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock%}

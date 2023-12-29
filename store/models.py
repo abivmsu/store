@@ -53,6 +53,8 @@ class Order (models.Model):
           ('Piece', 'Piece'),
     )
     user = models.ForeignKey(User,on_delete=models.CASCADE)
+    books = models.ManyToManyField(Book, blank=True)
+    items = models.ManyToManyField(Item, blank=True)
     # product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity =  models.IntegerField(default = 1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -70,8 +72,10 @@ class Store(models.Model):
     # content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     # object_id = models.PositiveIntegerField()
     # product = GenericForeignKey('content_type', 'object_id')
-    books = models.ManyToManyField(Book, blank=True)
-    items = models.ManyToManyField(Item, blank=True)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    books = models.ForeignKey(Book,on_delete=models.CASCADE, blank=True, null=True)
+    items = models.ForeignKey(Item, on_delete=models.CASCADE,blank=True, null= True)
+    quantity = models.IntegerField(default = 0)
+    is_book = models.BooleanField(default=False)
+    is_item = models.BooleanField(default=False)
     def __str__(self):
-        return f"{self.books.all() } - {self.items.all()}"
+        return f"{self.books } - {self.items}"
