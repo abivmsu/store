@@ -1,0 +1,218 @@
+{% extends 'base.html' %} 
+{% block title %}Andelus | Store_detail{% endblock %} 
+{% block content %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+     <!-- Page Heading -->
+     <div class="d-sm-flex align-items-center justify-content-between mb-4">
+       <h1 class="h3 mb-0 text-gray-800">Andelus Store Detail </h1>
+      {% if page == 'book' %}
+      <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+       class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
+       {% elif page == 'item' %}
+     <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+             class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
+     {% endif %}
+ </div>
+
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-info">detaile of sotre BOOKS</h6>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{book_form.as_p}}
+      {{store_form.as_p}}
+      <button type="submit" > save </button>
+      </form>
+      <div class="table-responsive">
+        <table
+          class="table table-bordered"
+          id="dataTable"
+          width="100%"
+          cellspacing="0"
+        >
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Subject</th>
+              <th>Grade</th>
+              <th>Pages</th>
+              <th>Quantity</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Subject</th>
+              <th>Grade</th>
+              <th>Pages</th>
+              <th>Quantity</th>
+              <th>Action</th>
+            </tr>
+          </tfoot>
+          <tbody>
+            {% for book in books %}
+            <tr>
+              <td class="align-middle text-center"><img src={{book.books.image.url}} width="200px"></td>
+              <td class="align-middle text-center">{{book.books.book_name}}</td>
+              <td class="align-middle text-center">{{book.books.description}}</td>
+              <td class="align-middle text-center">{{book.books.subject}}</td>
+              <td class="align-middle text-center">{{book.books.grade}}</td>
+              <td class="align-middle text-center">{{book.books.pages}}</td>
+              <td class="align-middle text-center">{{book.quantity}}</td>
+              <td class="align-middle text-center"><a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus-circle"></i>
+                </span>
+            </a>
+            <a href="#" class="btn btn-info btn-icon-split">
+              <span class="icon text-white-50">
+                  <i class="fas fa-info-circle"></i>
+              </span>
+              <span class="text">Detail</span>
+          </a>
+          </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% if page == 'book' %}
+  {% elif page == 'item' %}
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table
+          class="table table-bordered"
+          id="dataTable"
+          width="100%"
+          cellspacing="0"
+        >
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Quantity</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Quantity</th>
+              <th>Action</th>
+            </tr>
+          </tfoot>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="align-middle text-center" ><img src={{item.items.image.url}} width="200px"></td>
+              <td class="align-middle text-center" >{{item.items.item_name}}</td>
+              <td class="align-middle text-center" >{{item.items.description}}</td>
+              <td class="align-middle text-center" >{{item.quantity}}</td>
+              <td class="align-middle text-center" ><a href="{% url 'product_detail' item.items.id%}?p=item" class="btn btn-success btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus-circle"></i>
+                </span>
+            </a>
+            <a href="#" class="btn btn-info btn-icon-split">
+              <span class="icon text-white-50">
+                  <i class="fas fa-info-circle"></i>
+              </span>
+              <span class="text">Detail</span>
+          </a>
+          </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  {% endif %}
+
+</div>
+<!-- /.container-fluid -->
+
+
+
+
+    <!-- add book Modal form-->
+    <div class="modal fade" id="add_new_book" tabindex="-1" role="dialog" aria-labelledby="add_newb"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add_newb">Add new Book </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Fill the following form to add Book.
+                <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ book_form.as_p }}
+                  
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit" >Add</button>
+                </div>
+              </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- add item Modal form-->
+    <div class="modal fade" id="add_new_item" tabindex="-1" role="dialog" aria-labelledby="add_newi"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add_newi">Add new item </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Fill the following form to add Book.
+                <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ item_form.as_p }}
+                  
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit" >Add</button>
+                </div>
+              </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

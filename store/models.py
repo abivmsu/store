@@ -56,15 +56,33 @@ class Order (models.Model):
     books = models.ManyToManyField(Book, blank=True)
     items = models.ManyToManyField(Item, blank=True)
     # product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity =  models.IntegerField(default = 1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity =  models.IntegerField(default = 0)
+    price = models.DecimalField(max_digits=10, decimal_places=2,default = 0.00)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPES)
     date = models.DateField(default = datetime.datetime.today)
     status = models.CharField(max_length=10, choices=STATUS)
     unit = models.CharField(max_length=20, choices=UNITS)
+    order_for = models.CharField(max_length=50, blank= True)
+    order_by = models.CharField(max_length=50, blank= True)
+    recieved_by = models.CharField(max_length=50, blank= True)
+    def __str__(self):
+        return f"Order {self.id}"
+
+    def get_books_str(self):
+        return ', '.join(str(book) for book in self.books.all())
+
+    def get_items_str(self):
+        return ', '.join(str(item) for item in self.items.all())
+
+    def get_full_description(self):
+        return f"Books: [{self.get_books_str()}], Items: [{self.get_items_str()}]"
+
+class OrderGroup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    orders = models.ManyToManyField(Order)
 
     def __str__(self):
-        return self.user
+        return f"OrderGroup {self.user}"
 
 class Store(models.Model):
 

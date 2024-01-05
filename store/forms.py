@@ -45,7 +45,7 @@
 
 
 from django import forms
-from .models import Category, Book, Item, Store
+from .models import Category, Book, Item, Store, Order
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -62,22 +62,32 @@ class ItemForm(forms.ModelForm):
         model = Item
         fields = ['category', 'item_name','description','image']
 
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['quantity', 'unit', 'price']
+
+    def __init__(self, *args, **kwargs):
+        super(OrderForm, self).__init__(*args, **kwargs)
+        # Customize the form if needed
+
+
 class StoreForm(forms.ModelForm):
     class Meta:
         model = Store
-        fields = ['books', 'items', 'quantity']
+        fields = ['quantity']
 
-    books = forms.ModelMultipleChoiceField(
-        queryset=Book.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'select2' }),required = False,
-    )
+    # books = forms.ModelMultipleChoiceField(
+    #     queryset=Book.objects.all(),
+    #     widget=forms.SelectMultiple(attrs={'class': 'select2' }),required = False,
+    # )
 
-    items = forms.ModelMultipleChoiceField(
-        queryset=Item.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'select2'}),required = False,
-    )
+    # items = forms.ModelMultipleChoiceField(
+    #     queryset=Item.objects.all(),
+    #     widget=forms.SelectMultiple(attrs={'class': 'select2'}),required = False,
+    # )
 
-    def __init__(self, *args, **kwargs):
-        super(StoreForm, self).__init__(*args, **kwargs)
-        self.fields['books'].queryset = Book.objects.all()
-        self.fields['items'].queryset = Item.objects.all()
+    # def __init__(self, *args, **kwargs):
+    #     super(StoreForm, self).__init__(*args, **kwargs)
+    #     self.fields['books'].queryset = Book.objects.all()
+    #     self.fields['items'].queryset = Item.objects.all()

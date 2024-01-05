@@ -3,17 +3,17 @@
 {% block content %}
 <!-- Begin Page Content -->
 <div class="container-fluid">
-   <!-- Page Heading -->
-   <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Andelus Store</h1>
-    {% if page == 'book' %}
-    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-            class="fas fa-plus fa-sm text-white-50"></i> Add Book to store</a>
-    {% elif page == 'item' %}
-    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-            class="fas fa-plus fa-sm text-white-50"></i> Add Item to store</a>
-    {% endif %}
-</div>
+     <!-- Page Heading -->
+     <div class="d-sm-flex align-items-center justify-content-between mb-4">
+       <h1 class="h3 mb-0 text-gray-800">Andelus Store </h1>
+      {% if page == 'book' %}
+      <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+       class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
+       {% elif page == 'item' %}
+     <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+             class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
+     {% endif %}
+ </div>
 
   {% if page == 'book' %}
   <!-- DataTales Example -->
@@ -56,19 +56,25 @@
           <tbody>
             {% for book in books %}
             <tr>
-              <td><img src={{book.books.image.url}} width="200px"></td>
-              <td>{{book.books.book_name}}</td>
-              <td>{{book.books.description}}</td>
-              <td>{{book.books.subject}}</td>
-              <td>{{book.books.grade}}</td>
-              <td>{{book.books.pages}}</td>
-              <td>{{book.quantity}}</td>
-              <td><a href="#" class="btn btn-info btn-icon-split">
+              <td class="align-middle text-center"><img src={{book.books.image.url}} width="200px"></td>
+              <td class="align-middle text-center">{{book.books.book_name}}</td>
+              <td class="align-middle text-center">{{book.books.description}}</td>
+              <td class="align-middle text-center">{{book.books.subject}}</td>
+              <td class="align-middle text-center">{{book.books.grade}}</td>
+              <td class="align-middle text-center">{{book.books.pages}}</td>
+              <td class="align-middle text-center">{{book.quantity}}</td>
+              <td class="align-middle text-center"><a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
                 <span class="icon text-white-50">
-                    <i class="fas fa-info-circle"></i>
+                    <i class="fas fa-plus-circle"></i>
                 </span>
-                <span class="text">Detail</span>
-            </a></td>
+            </a>
+            <a href="{% url 'store_detail' book.id %}" class="btn btn-info btn-icon-split">
+              <span class="icon text-white-50">
+                  <i class="fas fa-info-circle"></i>
+              </span>
+              <span class="text">Detail</span>
+          </a>
+          </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -113,16 +119,22 @@
           <tbody>
             {% for item in items %}
             <tr>
-              <td><img src={{item.items.image.url}} width="200px"></td>
-              <td>{{item.items.item_name}}</td>
-              <td>{{item.items.description}}</td>
-              <td>{{item.quantity}}</td>
-              <td><a href="#" class="btn btn-info btn-icon-split">
+              <td class="align-middle text-center" ><img src={{item.items.image.url}} width="200px"></td>
+              <td class="align-middle text-center" >{{item.items.item_name}}</td>
+              <td class="align-middle text-center" >{{item.items.description}}</td>
+              <td class="align-middle text-center" >{{item.quantity}}</td>
+              <td class="align-middle text-center" ><a href="{% url 'product_detail' item.items.id%}?p=item" class="btn btn-success btn-icon-split">
                 <span class="icon text-white-50">
-                    <i class="fas fa-info-circle"></i>
+                    <i class="fas fa-plus-circle"></i>
                 </span>
-                <span class="text">Detail</span>
-            </a></td>
+            </a>
+            <a href="#" class="btn btn-info btn-icon-split">
+              <span class="icon text-white-50">
+                  <i class="fas fa-info-circle"></i>
+              </span>
+              <span class="text">Detail</span>
+          </a>
+          </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -136,4 +148,63 @@
 
 </div>
 <!-- /.container-fluid -->
+
+
+
+
+    <!-- add book Modal form-->
+    <div class="modal fade" id="add_new_book" tabindex="-1" role="dialog" aria-labelledby="add_newb"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add_newb">Add new Book </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Fill the following form to add Book.
+                <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ book_form.as_p }}
+                  
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit" >Add</button>
+                </div>
+              </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- add item Modal form-->
+    <div class="modal fade" id="add_new_item" tabindex="-1" role="dialog" aria-labelledby="add_newi"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add_newi">Add new item </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Fill the following form to add Book.
+                <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+
+                  {{ item_form.as_p }}
+                  
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit" >Add</button>
+                </div>
+              </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
 {% endblock %}

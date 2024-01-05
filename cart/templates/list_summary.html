@@ -1,0 +1,250 @@
+{% extends 'base.html' %} 
+{% block title %}Andelus | Lists{% endblock %} 
+{% block content %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+   <!-- Page Heading -->
+   <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     <h1 class="h3 mb-0 text-gray-800">List Summary </h1>
+     {% if page == 'book' %}
+     <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+      class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
+      {% elif page == 'item' %}
+      <h1 class="h3 mb-0 text-gray-800">Items</h1>
+    <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+            class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
+    {% endif %}
+</div>
+
+<section class="h-100 gradient-custom">
+  <div class=" py-10">
+    <div class="row d-flex justify-content-center my-4">
+      <div class="col-md-8">
+        <div class="card mb-4">
+          <div class="card-header py-3">
+            <h5 class="mb-0">List - {{cart|length}} products</h5>
+          </div>
+          <div class="card-body">
+            <!-- Single item -->
+            {% for product in products %}
+            <div class="row">
+              <div class="col-lg-3 col-md-12 mb-4 mb-lg-0">
+                <!-- Image -->
+                <div class="bg-image hover-overlay hover-zoom ripple rounded" data-mdb-ripple-color="light">
+                  
+                  <img src="{{product.image.url}}"
+                    class="w-100" alt="Blue Jeans Jacket" />
+                  <a href="#!">
+                    <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+                  </a>
+                </div>
+                <!-- Image -->
+              </div>
+
+              <div class="col-lg-5 col-md-6 mb-4 mb-lg-0">
+                <!-- Data -->
+                {% if product.p_type == 'book'%}
+                <p> <strong>{{product.subject}} {{product.description}}</strong></p>
+                <p>Grade: <strong>{{product.grade}}  </strong></p>
+                <p>Description: <strong>{{product.description}}  </strong></p>
+                <p>Pages: <strong>{{product.pages}}  </strong>- ገፅ</p>
+                {% else%}
+                <p> <strong>{{product}}</strong></p>
+                <p>Description: <strong>{{product.description}}  </strong></p>
+                {% endif %}
+                
+                <!-- Data -->
+              </div>
+
+              <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                <!-- Quantity -->
+                <div class="d-flex mb-4" style="max-width: 300px">
+                  <button class="btn btn-primary px-3 me-2"
+                    onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                    <i class="fas fa-minus"></i>
+                  </button>
+
+                  <div class="form-outline">
+                    <input  min="1" style="text-align:center;" name="quantity" value="{{product.quantity}}" type="number" class="form-control idd_quantity" />
+                   
+                  </div>
+
+                  <button class="btn btn-primary px-3 ms-2"
+                    onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+                <!-- Quantity -->
+
+                <!-- unit -->
+                <p class="text-start text-md-center">
+                  Unit: <strong>{{product.unit}}  </strong>
+                </p>
+                <!-- Price -->
+                <!-- Price -->
+                <p class="text-start text-md-center">
+                  <input min="0" style="text-align:center;" name="price"  value="{{product.price}}" type="number" class="form-control idd_price" />
+                    Unit Price: <strong>{{product.price}}  </strong>ብር
+                  <p class="text-start text-md-center">
+                    Total Price: <strong>{{ product.total_price }} ብር</strong>
+                  </p>
+                </p>
+
+                <button type="button"  data-index="{{product.id}}_{{product.p_type}}" class="btn btn-danger btn-sm me-1 mb-2 remove-cart" data-mdb-toggle="tooltip"
+                  title="Remove item">
+                  <i class="fas fa-trash"></i> Remove
+                </button>
+                <button type="button" data-index="{{product.id}}_{{product.p_type}}" class="btn btn-info btn-sm mb-2 update-cart" data-mdb-toggle="tooltip"
+                  title="update your list">
+                  <i class="fas fa-check"></i> Update
+                </button>
+                <!-- Price -->
+              </div>
+            </div>
+            <!-- Single item -->
+            <hr class="my-4" />
+            {%endfor%}
+            
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-header py-3">
+            <h5 class="mb-0">Summary</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              {% for product in products %}
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
+                {{product}} ({{product.quantity}} x {{product.price}}) 
+                <span><strong>{{product.total_price}}</strong> ብር</span>
+              </li>
+              {% endfor %}
+              
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
+                <div>
+                  <strong>አጠቃላይ ብር</strong>
+                  <strong>
+                    <p class="mb-0">( የ ግዢ )</p>
+                  </strong>
+                </div>
+                <span><strong>{{ overall_total }} ብር</strong></span>
+              </li>
+            </ul>
+
+            <button type="button" data-toggle="modal" data-target="#finish"  class="btn btn-info btn-lg btn-block">
+             Conitnue
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<!-- /.container-fluid -->
+
+
+  <!-- add item Modal form-->
+  <div class="modal fade" id="finish" tabindex="-1" role="dialog" aria-labelledby="finish"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title text-info" id="finish">የ ንብረት ገቢ ፎርም</h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+          <form method="post" action="{% url 'finish_order' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="inputEmail4">የተገዛለት ክፍል/ስም</label>
+                  <input type="text" class="form-control" name="order_for" placeholder="Enter የተገዛለት ክፍል/ስም here..." required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="inputPassword4">ስም</label>
+                  <input type="text" class="form-control" name="order_name" placeholder="Enter ስም here..." required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inputAddress">ያስረከበው</label>
+                <input type="text" class="form-control" name="order_by" placeholder="Enter ያስረከበው አካል ስም here..." required>
+              </div>
+              <div class="form-group">
+                <label for="inputAddress2">የተረከበው</label>
+                <input type="text" class="form-control" name="recieved_by" value="{{user}}"placeholder=" " required >
+              </div>              
+          <div class="modal-footer">
+            <small id="emailHelp" class="form-text text-warning">Fill the form and click finish to add to the store </small>
+              <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+              <button class="btn btn-success" type="submit" >Finish</button>
+          </div>
+        </form>
+      </div>
+      </div>
+  </div>
+</div>
+
+
+
+<script>
+  // Check if button pressed
+  $(document).on('click', '.update-cart', function(e){
+    e.preventDefault();
+    var productid = $(this).data('index');
+    var quantity = $(this).closest('.row').find('.idd_quantity').val();
+    var price = $(this).closest('.row').find('.idd_price').val();
+      $.ajax({
+          type: 'POST',
+          url: '{% url 'list_update' %}',
+          data: {
+      product_id: $(this).data('index'),
+      product_quantity: quantity,
+      product_price: price,
+      csrfmiddlewaretoken: '{{ csrf_token }}',
+      action: 'post'
+          },
+  
+          success: function(json){
+            //  console.log(json.qty)
+            //document.getElementById("list_quantity").textContent = json.qty
+            location.reload();
+          },
+  
+          error: function(xhr, errmsg, err){
+  
+          }
+  
+  
+      });
+  
+  
+  
+  })  
+
+  $(document).on('click', '.remove-cart', function(e){
+    e.preventDefault();
+      $.ajax({
+          type: 'POST',
+          url: '{% url 'list_delete' %}',
+          data: {
+      product_id: $(this).data('index'),
+      csrfmiddlewaretoken: '{{ csrf_token }}',
+      action: 'post'
+          },
+          success: function(json){
+            location.reload();
+          },
+          error: function(xhr, errmsg, err){
+          }
+      });
+  })  
+</script>
+{% endblock%}

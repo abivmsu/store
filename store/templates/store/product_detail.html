@@ -1,0 +1,104 @@
+{% extends 'base.html' %} 
+{% block title %}Andelus | product_detail{% endblock %} 
+{% block content %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+   <!-- Page Heading -->
+   <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     {% if page == 'book' %}
+     <h1 class="h3 mb-0 text-gray-800">Books </h1>
+     {% comment %} <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+      class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a> {% endcomment %}
+      {% elif page == 'item' %}
+      <h1 class="h3 mb-0 text-gray-800">Items</h1>
+    {% comment %} <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+            class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a> {% endcomment %}
+    {% endif %}
+</div>
+
+<div class="container">
+  <br/>
+  
+  
+  <div class="card mb-3">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="...">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <center>
+            <h5 class="card-title">{{ product.book_name }}</h5>
+            <p class="card-text justified">{{ product.description }}</p>
+            {{ form.as_p }}
+  <div class="row justify-content-center">
+      <div class="col-md-2">Quantity:</div>
+                  <div class="col-md-2">
+                  <select class="form-select form-select-sm" id="qty-cart">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                  </select>
+                  </div>
+              </div>
+              <br/><br/>
+          <a href="{% url 'index'%}" class="btn btn-secondary">Home</a>
+          {% if page == 'book' %}
+          <input type="hidden" value="book" id="type">
+          {% elif page == 'item' %}
+          <input type="hidden" value="item" id="type">
+          {% endif %}
+          <button type="button" value="{{ product.id }}" class="btn btn-secondary" id="add-list">Add To Cart</button>
+      </center>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+            
+  
+
+</div>
+<!-- /.container-fluid -->
+
+<script>
+  // Check if button pressed
+  $(document).on('click', '#add-list', function(e){
+      e.preventDefault();
+      $.ajax({
+          type: 'POST',
+          url: '{% url 'list_add' %}',
+          data: {
+      product_id: $('#add-list').val(),
+      //product_qty: $('#qty-cart option:selected').text(),
+      product_type: $('#type').val(),
+      product_quantity: $('#id_quantity').val(),
+      product_unit: $('#id_unit').val(),
+      product_price: $('#id_price').val(),
+      csrfmiddlewaretoken: '{{ csrf_token }}',
+      action: 'post'
+          },
+  
+          success: function(json){
+              console.log(json.qty)
+              document.getElementById("list_quantity").textContent = json.qty
+          },
+  
+          error: function(xhr, errmsg, err){
+  
+          }
+  
+  
+      });
+  
+  
+  
+  })
+  
+  
+  
+  
+  </script>
+{% endblock%}
