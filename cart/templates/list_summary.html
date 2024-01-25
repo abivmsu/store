@@ -134,10 +134,15 @@
                 <span><strong>{{ overall_total }} ብር</strong></span>
               </li>
             </ul>
-
+            {% if request.user.groups.all.0.name == 'Custodian' %}
             <button type="button" data-toggle="modal" data-target="#finish"  class="btn btn-info btn-lg btn-block">
              Conitnue
             </button>
+            {% elif request.user.groups.all.0.name == 'Director' %}
+            <button type="button" data-toggle="modal" data-target="#confirm"  class="btn btn-info btn-lg btn-block">
+             Finish
+            </button>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -181,6 +186,41 @@
                 <label for="inputAddress2">የተረከበው</label>
                 <input type="text" class="form-control" name="recieved_by" value="{{user}}"placeholder=" " required >
               </div>              
+          <div class="modal-footer">
+            <small id="emailHelp" class="form-text text-warning">Fill the form and click finish to add to the store </small>
+              <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+              <button class="btn btn-success" type="submit" >Finish</button>
+          </div>
+        </form>
+      </div>
+      </div>
+  </div>
+</div>
+
+
+  <!-- Confirm request-->
+  <div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="confirm"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title text-info" id="finish">የ ንብረት ወጪ</h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+          <form method="post" action="{% url 'finish_order' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+              
+            <div class="form-group">
+              <label for="inputAddress2">ጠያቂ</label>
+              <input type="text" class="form-control" name="order_by" value="{{user}}"placeholder=" " required >
+            </div>              
+            <div class="form-group">
+              <label for="inputAddress">ሚስጥር/መለያ ኮድ</label>
+              <input type="password" class="form-control" name="password" placeholder="Enter ሚስጥር/መለያ ኮድ here..." required>
+            </div>
           <div class="modal-footer">
             <small id="emailHelp" class="form-text text-warning">Fill the form and click finish to add to the store </small>
               <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>

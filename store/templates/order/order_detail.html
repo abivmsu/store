@@ -1,58 +1,54 @@
 {% extends 'base.html' %} 
-{% block title %}Andelus | Store_detail{% endblock %} 
+{% block title %}Andelus | Order{% endblock %} 
 {% block content %}
 <!-- Begin Page Content -->
 <div class="container-fluid">
      <!-- Page Heading -->
      <div class="d-sm-flex align-items-center justify-content-between mb-4">
-       <h1 class="h3 mb-0 text-gray-800">Andelus Store Detail </h1>
-      {% if page == 'book' %}
-      <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-       class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
-       {% elif page == 'item' %}
-     <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-             class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
-     {% endif %}
+       <h1 class="h3 mb-0 text-gray-800">Andelus Store Order Detail </h1>
+       <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+        class="fas fa-arrow fa-sm text-white-50"></i> Dwonload report</a>
  </div>
 
- {% if product.is_book %}
-
-  <!-- DataTales Example -->
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-info">detaile of sotre BOOKS</h6>
-    </div>
-    <div class="card-body">
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{book_form.as_p}}
-        {{store_form.as_p}}
-      <button type="submit" > save </button>
-      </form>
+  {% for product in order.orders.all %}
+  <div class="card mb-3" style="max-width: 100%;">
+    <div class="row no-gutters">
+      <div class="col-md-4">
+        {% if product.is_book %}
+        <img src="{{product.books.image.url}}" class="card-img" alt="...">
+        {% elif product.is_item %}
+        <img src="{{product.items.image.url}}" class="card-img" alt="...">
+        {% endif %}
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title text-start text-md-center">
+            {% if product.is_book %}
+            {{product.books.book_name}}</h5>
+            {% elif product.is_item %}
+            {{product.items.item_name}}</h5>
+            {%endif%}
+           <!-- unit -->
+           <p class="text-start text-md-center">
+            Quantity: <strong>{{product.quantity}}  </strong>
+          </p>
+           <p class="text-start text-md-center">
+            Unit: <strong>{{product.unit}}  </strong>
+          </p>
+          <!-- Price -->
+          <!-- Price -->
+          <p class="text-start text-md-center">
+             Unit Price: <strong>{{product.price}}  </strong>ብር
+            <p class="text-start text-md-center">
+              Total Price: <strong>{{ product.total_price }} ብር</strong>
+            </p>
+          </p> <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+        </div>
+      </div>
     </div>
   </div>
-
+  {%endfor%}
  
-  {% elif product.is_item %}
-
-  <!-- DataTales Example -->
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-info">List of Items</h6>
-    </div>
-    <div class="card-body">
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        {{item_form.as_p}}
-        {{store_form.as_p}}
-      <button type="submit" class="btn btn-success"> save </button>
-      </form>
-    </div>
-  </div>
-
-
-  {% endif %}
 
 </div>
 <!-- /.container-fluid -->
@@ -71,7 +67,7 @@
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Fill the following form to add Book.
+                <div class="modal-body">Fill the following form to add Book.</div>
                 <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data">
                   {% csrf_token %}
 
@@ -82,7 +78,6 @@
                     <button class="btn btn-primary" type="submit" >Add</button>
                 </div>
               </form>
-            </div>
             </div>
         </div>
     </div>
@@ -98,7 +93,7 @@
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Fill the following form to add Book.
+                <div class="modal-body">Fill the following form to add Book.</div>
                 <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
                   {% csrf_token %}
 
@@ -109,7 +104,6 @@
                     <button class="btn btn-primary" type="submit" >Add</button>
                 </div>
               </form>
-            </div>
             </div>
         </div>
     </div>

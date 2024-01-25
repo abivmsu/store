@@ -18,32 +18,18 @@
 
 <div class="container">
   <br/>
-  
-  
-  <div class="card mb-3">
-    <div class="row g-0">
+  <div class="card mb-3" style="max-width: 100%;">
+    <div class="row no-gutters">
       <div class="col-md-4">
-        <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="...">
+        <img src="{{ product.image.url }}" class="card-img" alt="...">
       </div>
       <div class="col-md-8">
         <div class="card-body">
-          <center>
+          <h5 class="card-title">Card title</h5>
             <h5 class="card-title">{{ product.book_name }}</h5>
             <p class="card-text justified">{{ product.description }}</p>
             {{ form.as_p }}
-  <div class="row justify-content-center">
-      <div class="col-md-2">Quantity:</div>
-                  <div class="col-md-2">
-                  <select class="form-select form-select-sm" id="qty-cart">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                  </div>
-              </div>
-              <br/><br/>
+        <div class="row justify-content-left">
           <a href="{% url 'index'%}" class="btn btn-secondary">Home</a>
           {% if page == 'book' %}
           <input type="hidden" value="book" id="type">
@@ -51,15 +37,14 @@
           <input type="hidden" value="item" id="type">
           {% endif %}
           <button type="button" value="{{ product.id }}" class="btn btn-secondary" id="add-list">Add To Cart</button>
-      </center>
+
         </div>
       </div>
     </div>
   </div>
-  </div>
-            
   
 
+</div>
 </div>
 <!-- /.container-fluid -->
 

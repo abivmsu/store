@@ -26,7 +26,7 @@ def list_add(request):
         book = get_object_or_404(Book, id = product_id)
         product_quantity = int(request.POST.get('product_quantity'))
         product_unit = (request.POST.get('product_unit'))
-        product_price = int(request.POST.get('product_price'))
+        product_price = float(request.POST.get('product_price'))
         product_type = request.POST.get('product_type')
         cart.add(product=book, quantity = product_quantity, unit = product_unit, price= product_price , product_type = product_type)
         

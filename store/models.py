@@ -41,11 +41,6 @@ class Order (models.Model):
           ('incoming', 'Incoming'),
           ('outgoing', 'Outgoing'),
     )    
-    STATUS = (
-          ('Pending', 'Pending'),
-          ('Accepted', 'Accepted'),
-          ('Complete', 'Complete'),
-    )
     UNITS = (
           ('litter', 'Litter'),
           ('kg', 'Kilogram'),
@@ -53,43 +48,53 @@ class Order (models.Model):
           ('Piece', 'Piece'),
     )
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    books = models.ManyToManyField(Book, blank=True)
-    items = models.ManyToManyField(Item, blank=True)
-    # product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    books = models.ForeignKey(Book,on_delete=models.CASCADE, blank=True, null=True)
+    items = models.ForeignKey(Item,on_delete=models.CASCADE, blank=True, null=True)
     quantity =  models.IntegerField(default = 0)
+    confirmed_quantity =  models.IntegerField(default = 0)
     price = models.DecimalField(max_digits=10, decimal_places=2,default = 0.00)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2,default = 0.00)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPES)
-    date = models.DateField(default = datetime.datetime.today)
-    status = models.CharField(max_length=10, choices=STATUS)
     unit = models.CharField(max_length=20, choices=UNITS)
+    is_book = models.BooleanField(default=False)
+    is_item = models.BooleanField(default=False)
+    def __str__(self):
+        return f"Order from {self.books , self.items}"
+    # def get_books_str(self):
+    #     return ', '.join(str(book) for book in self.books.all())
+
+    # def get_items_str(self):
+    #     return ', '.join(str(item) for item in self.items.all())
+
+    # def get_full_description(self):
+    #     return f"Books: [{self.get_books_str()}], Items: [{self.get_items_str()}]"
+   
+
+class OrderGroup(models.Model):
+    ORDER_TYPES = (
+          ('incoming', 'Incoming'),
+          ('outgoing', 'Outgoing'),
+    )  
+    STATUS = (
+          ('Pending', 'Pending'),
+          ('Accepted', 'Accepted'),
+          ('Complete', 'Complete'),
+    )  
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    orders = models.ManyToManyField(Order)
+    order_type = models.CharField(max_length=10, choices=ORDER_TYPES)
     order_for = models.CharField(max_length=50, blank= True)
     order_by = models.CharField(max_length=50, blank= True)
     recieved_by = models.CharField(max_length=50, blank= True)
+    approved_by = models.CharField(max_length=50, blank= True)
+    status = models.CharField(max_length=10, choices=STATUS)
+    date = models.DateField(default = datetime.datetime.today)
+   
+   
     def __str__(self):
-        return f"Order {self.id}"
-
-    def get_books_str(self):
-        return ', '.join(str(book) for book in self.books.all())
-
-    def get_items_str(self):
-        return ', '.join(str(item) for item in self.items.all())
-
-    def get_full_description(self):
-        return f"Books: [{self.get_books_str()}], Items: [{self.get_items_str()}]"
-
-class OrderGroup(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    orders = models.ManyToManyField(Order)
-
-    def __str__(self):
-        return f"OrderGroup {self.user}"
+        return f"Order From {self.user}"
 
 class Store(models.Model):
-
-    # product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    # content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    # object_id = models.PositiveIntegerField()
-    # product = GenericForeignKey('content_type', 'object_id')
     books = models.ForeignKey(Book,on_delete=models.CASCADE, blank=True, null=True)
     items = models.ForeignKey(Item, on_delete=models.CASCADE,blank=True, null= True)
     quantity = models.IntegerField(default = 0)
