@@ -13,12 +13,17 @@ class Cart():
 
         # Make sure cart is available on all pages of site
         self.cart = cart
-
-    def add (self, product, quantity, unit, price, product_type):
+    def add (self, product, quantity, unit, price, product_type, sub_unit,tax,subunit_quantity):
         product_id = str(product.id)
         product_quantity = str(quantity)
         product_unit = str(unit)
         product_price = str(price)
+
+        product_subunit = str(sub_unit)
+        product_tax = str(tax)
+        product_subunit_quantity = str(subunit_quantity)
+      
+
         # Create a unique key combining product_id and product_type
         cart_key = f"{product_id}_{product_type}"
 
@@ -33,7 +38,10 @@ class Cart():
                 'quantity': int(product_quantity),
                 'unit': product_unit,
                 'price': float(product_price),
-                'p_type': product_type
+                'p_type': product_type,
+                'sub_unit': product_subunit,
+                'subunit_quantity': int(product_subunit_quantity),
+                'tax': product_tax,
             }
 
 
@@ -63,9 +71,14 @@ class Cart():
             product.quantity = self.cart[cart_key]['quantity']
             product.unit = self.cart[cart_key]['unit']
             product.price = self.cart[cart_key]['price']
+            product.sub_unit = self.cart[cart_key]['sub_unit']
+            product.subunit_quantity = self.cart[cart_key]['subunit_quantity']
+            product.tax = self.cart[cart_key]['tax']
             product.p_type = product_type
             
-            product.total_price = product.quantity * product.price
+            product.total = product.quantity * product.price 
+            product.price_tax = product.total * (float(product.tax)/100)
+            product.total_price = product.total + product.price_tax 
 
             products.append(product)
 
@@ -92,9 +105,13 @@ class Cart():
 
             # Calculate total price for each product
             product.total_price = product_data['quantity'] * product_data['price']
-
+            total = product_data['quantity'] * product_data['price'] 
+            tax_price = total * (float( product_data['tax'])/100)
+            total_price = total + tax_price
+            print( total_price)
         # Calculate overall total
-        overall_total = sum(product_data['quantity'] * product_data['price'] for product_data in self.cart.values())
+        #overall_total = sum(product_data['quantity'] * product_data['price'] for product_data in self.cart.values())
+        overall_total = sum(total_price for product_data in self.cart.values())
 
         return overall_total
 
@@ -107,6 +124,10 @@ class Cart():
         if product in self.cart:
             self.cart[product]['quantity'] = product_quantity
             self.cart[product]['price'] = product_price
+            if  self.cart[product]['sub_unit'] == 'none':
+                self.cart[product]['subunit_quantity'] = product_quantity
+            else:
+                pass
         self.session.modified = True
         
         #return {'success': True}

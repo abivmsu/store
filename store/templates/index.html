@@ -3,6 +3,129 @@
 {% block title %}Create Store Entry{% endblock %}
 
 {% block content %}
+
+
+{% if request.user.groups.all.0.name == 'Custodian' %}
+
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- Your Bootstrap card structure for Total Orders -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card text-white bg-success shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col-9">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Total Orders</div>
+                            <div class="h5 mb-0 font-weight-bold text-white-800">{{ total_orders }}</div>
+                        </div>
+                        <div class="col-3 text-right">
+                            <i class="fas fa-shopping-cart fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Bootstrap card structure for Total Items -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card text-white bg-info shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col-9">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Total Items</div>
+                            <div class="h5 mb-0 font-weight-bold text-white-800">{{ total_items }}</div>
+                        </div>
+                        <div class="col-3 text-right">
+                            <i class="fas fa-cube fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Bootstrap card structure for Total Books -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card text-white bg-warning shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col-9">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Total Books</div>
+                            <div class="h5 mb-0 font-weight-bold text-white-800">{{ total_books }}</div>
+                        </div>
+                        <div class="col-3 text-right">
+                            <i class="fas fa-book fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Your other content sections -->
+    <h1 class="mt-4">Welcome to the Store Management System</h1>
+
+    <section>
+        <h2>Book Catalog</h2>
+        {% for book in books %}
+            <!-- ... (same as before) ... -->
+        {% endfor %}
+    </section>
+
+    <section>
+        <h2>Item Catalog</h2>
+        {% for item in items %}
+            <!-- ... (same as before) ... -->
+        {% endfor %}
+    </section>
+
+    <section>
+        <h2>Recent Orders</h2>
+        {% for order in orders %}
+            <!-- ... (same as before) ... -->
+        {% endfor %}
+    </section>
+
+
+<!-- Add similar card structures for total items and total books -->
+<div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                        Total Items</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_items }}</div>
+                </div>
+                <div class="col-auto">
+                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        Total Books</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_books }}</div>
+                </div>
+                <div class="col-auto">
+                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+{% elif request.user.groups.all.0.name == 'Director' %}
   <h2>Create Store Entry</h2>
   <form method="post">
     {% csrf_token %}
@@ -345,4 +468,5 @@
     </div>
   
   </div>
+{% endif %}
 {% endblock %}

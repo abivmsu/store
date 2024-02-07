@@ -36,39 +36,38 @@ class Item(models.Model):
     def __str__(self):
         return self.item_name
 
-class Order (models.Model):
+class Order(models.Model):
     ORDER_TYPES = (
           ('incoming', 'Incoming'),
           ('outgoing', 'Outgoing'),
     )    
     UNITS = (
-          ('litter', 'Litter'),
+          ('none', 'None'),
+          ('liter', 'Liter'),
           ('kg', 'Kilogram'),
           ('packets', 'Packets'),
-          ('Piece', 'Piece'),
+          ('piece', 'Piece'),
     )
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    books = models.ForeignKey(Book,on_delete=models.CASCADE, blank=True, null=True)
-    items = models.ForeignKey(Item,on_delete=models.CASCADE, blank=True, null=True)
-    quantity =  models.IntegerField(default = 0)
-    confirmed_quantity =  models.IntegerField(default = 0)
-    price = models.DecimalField(max_digits=10, decimal_places=2,default = 0.00)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2,default = 0.00)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    books = models.ForeignKey(Book, on_delete=models.CASCADE, blank=True, null=True)
+    items = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.IntegerField(default=0)
+    confirmed_quantity = models.IntegerField(default=0)
+    issued_quantity = models.IntegerField(default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    tax = models.IntegerField(default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPES)
     unit = models.CharField(max_length=20, choices=UNITS)
+    subunit = models.CharField(max_length=20, choices=UNITS, default='none', blank=True, null=True)
+    subunit_quantity = models.IntegerField(blank=True, null=True)
     is_book = models.BooleanField(default=False)
     is_item = models.BooleanField(default=False)
+    issued_date = models.DateField(default=datetime.datetime.today)
+
     def __str__(self):
-        return f"Order from {self.books , self.items}"
-    # def get_books_str(self):
-    #     return ', '.join(str(book) for book in self.books.all())
+        return f"Order from {self.books}, {self.items}"
 
-    # def get_items_str(self):
-    #     return ', '.join(str(item) for item in self.items.all())
-
-    # def get_full_description(self):
-    #     return f"Books: [{self.get_books_str()}], Items: [{self.get_items_str()}]"
-   
 
 class OrderGroup(models.Model):
     ORDER_TYPES = (
@@ -89,7 +88,8 @@ class OrderGroup(models.Model):
     approved_by = models.CharField(max_length=50, blank= True)
     status = models.CharField(max_length=10, choices=STATUS)
     date = models.DateField(default = datetime.datetime.today)
-   
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
    
     def __str__(self):
         return f"Order From {self.user}"

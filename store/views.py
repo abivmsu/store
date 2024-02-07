@@ -1,12 +1,13 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponseForbidden
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden,JsonResponse
 from django.urls import reverse
 from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm
 from django.contrib import messages
 from .models import *
 from cart.cart import Cart
 from django.db import transaction
-import datetime
+import datetime , json
+from django.views.decorators.http import require_POST
 # Create your views here.
 
 
@@ -57,17 +58,30 @@ def create_item(request):
 
 
 def index(request):
-    if request.method == 'POST':
-        form = StoreForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('success_page')  # Replace 'success_page' with your success page URL.
-    else:
-        form = StoreForm()
-        books = Book.objects.all()
-        items = Item.objects.all()
-    context = {'form': form, 'books': books, 'items': items}
-    return render(request, 'index.html', context )
+   # Calculate the total orders, total items, total books, and other data
+    total_orders = Order.objects.count()
+    total_items = Item.objects.count()
+    total_books = Book.objects.count()
+
+    # You can add more calculations based on your needs
+
+    # Get a list of books, items, and orders to pass to the template
+    books = Book.objects.all()
+    items = Item.objects.all()
+    orders = Order.objects.all()
+
+    # Prepare the context dictionary with the calculated values and data
+    context = {
+        'total_orders': total_orders,
+        'total_items': total_items,
+        'total_books': total_books,
+        'books': books,
+        'items': items,
+        'orders': orders,
+    }
+
+    # Render the template with the context
+    return render(request, 'index.html', context)
 
 def book_store(request):
     page = 'book'
@@ -173,6 +187,7 @@ def finish_order(request):
             order_for = request.POST.get('order_for')
             order_by = request.POST.get('order_by')
             recieved_by = request.POST.get('recieved_by')
+            overall_total = request.POST.get('overall_total')
             #if request.user.groups.filter(name='Custodian').exists():
             user = request.user
             order_group = OrderGroup(user=user, 
@@ -181,7 +196,8 @@ def finish_order(request):
             order_for= order_for,
             order_by= order_by,
             date=datetime.datetime.today(),
-            recieved_by= recieved_by
+            recieved_by= recieved_by,
+            total_price= overall_total
             )
             order_group.save()
             # Get the cart and iterate through the products
@@ -191,15 +207,21 @@ def finish_order(request):
             # Iterate through the cart
             for product_key, product_data in cart.cart.items():
                 product_id, product_type = product_key.split('_')
-
+                
+                total = product_data['quantity'] * product_data['price'] 
+                tax_price = total * (float( product_data['tax'])/100)
+                total_price = total + tax_price
                 # Create an instance of the Order model for each product
                 order = Order(
                     user=user,
                     quantity=product_data['quantity'],
-                    price=product_data['price'],
-                    total_price=product_data['quantity'] * product_data['price'],
+                    subunit_quantity=product_data['subunit_quantity'],
+                    price= total,
+                    tax= product_data['tax'],
+                    total_price= total_price,
                     order_type='incoming',  # Set order type as needed
                     unit=product_data['unit'],  # Assuming you want the last unit in the cart
+                    subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
                 )
                 # Assuming 'books' and 'items' are related names in the Order model
                 if product_type == 'book':
@@ -220,7 +242,7 @@ def finish_order(request):
                     )
                 order.save()
                 if store_product:
-                    store_product.quantity += product_data['quantity']
+                    store_product.quantity += product_data['subunit_quantity']
                     store_product.save()
                 order_group.orders.add(order)
         # Clear the cart after completing the orders
@@ -302,6 +324,8 @@ def orders(request):
         page =  request.GET['p']
         if request.user.groups.filter(name='Director').exists():
             order_group = OrderGroup.objects.filter( user = request.user, order_type= 'outgoing')
+        elif request.user.groups.filter(name='Custodian').exists():
+            order_group = OrderGroup.objects.filter(order_type= 'outgoing')
         else:
             order_group = OrderGroup.objects.filter(order_type= 'outgoing')
     context= {'order_group': order_group, 'page':page}
@@ -311,3 +335,90 @@ def order_detail(request,order_id):
     order = OrderGroup.objects.get(id = order_id)
     context = {'order':order}
     return render(request, 'order/order_detail.html', context)
+
+
+
+
+@require_POST
+def confirm_all_quantities(request):
+    try:
+        ordergroup_id = int(request.POST.get('ordergroup_id'))
+        quantities_data = json.loads(request.POST.get('confirmed_quantities'))
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+    try:
+        ordergroup = OrderGroup.objects.get(id=ordergroup_id)
+    except OrderGroup.DoesNotExist:
+        return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+
+    for item_data in quantities_data:
+        try:
+            item_id = int(item_data['productId'])
+            quantity = int(item_data['quantity'])
+            item = ordergroup.orders.get(id=item_id)
+            item.confirmed_quantity = quantity
+            item.save()
+        except (ValueError, TypeError, Order.DoesNotExist):
+            return JsonResponse({'error': 'Invalid product data'}, status=400)
+    ordergroup.status='Accepted'
+    ordergroup.save()
+    return JsonResponse({'success': 'Confirmed quantities updated successfully'})
+
+
+@require_POST
+def issue_quantities(request):
+    try:
+        ordergroup_id = int(request.POST.get('ordergroup_id'))
+        quantities_data = json.loads(request.POST.get('issued_quantities'))
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+    try:
+        ordergroup = OrderGroup.objects.get(id=ordergroup_id)
+    except OrderGroup.DoesNotExist:
+        return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+
+    for item_data in quantities_data:
+        try:
+            item_id = int(item_data['productId'])
+            quantity = int(item_data['quantity'])
+            product = ordergroup.orders.get(id=item_id)
+            if product.is_book  == True:
+                store_book = Store.objects.get(books=product.books)
+                store_book.quantity -= quantity
+                store_book.save()
+            elif product.is_item == True:
+                store_item =Store.objects.get(items=product.items)
+                store_item.quantity -= quantity
+                store_item.save()
+            product.issued_quantity = quantity
+            product.save()
+        except (ValueError, TypeError, Order.DoesNotExist):
+            return JsonResponse({'error': 'Invalid product data'}, status=400)
+    ordergroup.status='Complete'
+    ordergroup.save()
+    return JsonResponse({'success': 'issued quantities updated successfully'})
+
+
+@require_POST
+def remove_order(request):
+    # Get the product ID from the POST data
+    product_id = request.POST.get('product_id')
+    ordergroup_id = int(request.POST.get('ordergroup_id'))
+    try:
+        ordergroup = OrderGroup.objects.get(id=ordergroup_id)
+    except OrderGroup.DoesNotExist:
+        return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+    # Retrieve the order to be removed
+    print(ordergroup.orders.count())
+    order_to_remove = get_object_or_404(Order, id=product_id)
+    if ordergroup.orders.count() == 1:
+        order_to_remove.delete()
+        ordergroup.delete()
+        return JsonResponse({'success': True, 'redirect': 'store/orders?p=wechi'})
+    else:
+        order_to_remove.delete()
+        # Perform the removal logic, you can customize this based on your needs
+    # Return a JSON response indicating success
+    return JsonResponse({'message': 'Order removed successfully'})

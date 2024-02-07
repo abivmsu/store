@@ -124,8 +124,10 @@
               <th>No</th>
               <th>Orders</th>
               <th>Order Date</th>
-              <th>Order For</th>
-              <th>Ordered Byy</th>
+              <th>Ordered By</th>
+              <th>Confirmed Qty</th>
+              <th>Issued Qty</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -134,8 +136,10 @@
               <th>No</th>
               <th>Orders</th>
               <th>Order Date</th>
-              <th>Order For</th>
-              <th>Ordered Byy</th>
+              <th>Ordered By</th>
+              <th>Confirmed Qty</th>
+              <th>Issued Qty</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </tfoot>
@@ -146,21 +150,41 @@
               {% comment %} <td class="align-middle text-center">{{book.books.book_name}}</td> {% endcomment %}
               <td class="align-middle text-center">
                 {{forloop.counter}}
-                </td>
+              </td>
               <td class="align-left text-left">
                 {%for product in order.orders.all%}
                   {% if product.books %}
-                    {{forloop.counter}}, {{product.books}} - {{product.quantity}} qty (Book)
+                    {{forloop.counter}}, {{product.books}} | {{product.quantity}} qty (Book)
                   {%elif product.items %} 
-                    {{forloop.counter}},{{product.items}}  (Item)
+                    {{forloop.counter}},{{product.items}} | {{product.quantity}} qty (Item)
+                  {%endif%}
+                  <br>
+                {%endfor%}
+              </td>
+             
+              <td class="align-middle text-center">{{order.date}}</td>
+              <td class="align-middle text-center">{{order.order_by}}</td>
+
+              <td class="align-left text-left">
+                {%for product in order.orders.all%}
+                  {% if product.books %}
+                    {{product.confirmed_quantity}} qty (Book)
+                  {%elif product.items %} 
+                     {{product.confirmed_quantity}} qty (Item)
                   {%endif%}
                 <br>
-            
               {%endfor%}</td>
-              <td class="align-middle text-center">{{order.date}}</td>
-              <td class="align-middle text-center">{{order.order_for}}</td>
-              <td class="align-middle text-center">{{order.order_by}}</td>
-              <td class="align-middle text-center">{{order.recieved_by}}</td>
+
+              <td class="align-left text-left">
+                {%for product in order.orders.all%}
+                  {% if product.books %}
+                     {{product.issued_quantity}} qty (Book)
+                  {%elif product.items %} 
+                     {{product.issued_quantity}} qty (Item)
+                  {%endif%}
+                <br>
+              {%endfor%}</td>
+
               <td class="align-middle text-center">{{order.status}}</td>
               <td class="align-middle text-center">
             <a href="{% url 'order_detail' order.id%}" class="btn btn-info btn-icon-split">
@@ -241,3 +265,42 @@
 
 
 {% endblock %}
+ 
+{% for product in order.orders.all %}
+<div class="card mb-3" style="max-width: 100%;">
+  <div class="row no-gutters">
+    <div class="col-md-4">
+      {% if product.is_book %}
+      <img src="{{product.books.image.url}}" class="card-img" alt="...">
+      {% elif product.is_item %}
+      <img src="{{product.items.image.url}}" class="card-img" alt="...">
+      {% endif %}
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title text-start text-md-center">
+          {% if product.is_book %}
+          {{product.books.book_name}}</h5>
+          {% elif product.is_item %}
+          {{product.items.item_name}}</h5>
+          {%endif%}
+         <!-- unit -->
+         <p class="text-start text-md-center">
+          Quantity: <strong>{{product.quantity}}  </strong>
+        </p>
+         <p class="text-start text-md-center">
+          Unit: <strong>{{product.unit}}  </strong>
+        </p>
+        <!-- Price -->
+        <!-- Price -->
+        <p class="text-start text-md-center">
+           Unit Price: <strong>{{product.price}}  </strong>ብር
+          <p class="text-start text-md-center">
+            Total Price: <strong>{{ product.total_price }} ብር</strong>
+          </p>
+        </p> <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+      </div>
+    </div>
+  </div>
+</div>
+{%endfor%}

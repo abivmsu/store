@@ -28,18 +28,47 @@ def list_add(request):
         product_unit = (request.POST.get('product_unit'))
         product_price = float(request.POST.get('product_price'))
         product_type = request.POST.get('product_type')
-        cart.add(product=book, quantity = product_quantity, unit = product_unit, price= product_price , product_type = product_type)
+
+        product_subunit = (request.POST.get('product_subunit'))
+        product_tax = int(request.POST.get('product_tax'))
+        product_subunit_quantity = int(request.POST.get('product_subunit_quantity'))
+        cart.add(
+          product=book,
+          quantity = product_quantity, 
+          unit = product_unit, 
+          price= product_price , 
+          product_type = product_type,
+
+          sub_unit = product_subunit, 
+          tax = product_tax, 
+          subunit_quantity = product_subunit_quantity, 
+          )
         
         list_quantity = cart.__len__()
         #response = JsonResponse({'Product Name: ': book.book_name})
         response = JsonResponse({'qty': list_quantity})
+
       elif request.POST.get('product_type') == 'item': 
         item = get_object_or_404(Item, id = product_id)
         product_quantity = int(request.POST.get('product_quantity'))
         product_unit = (request.POST.get('product_unit'))
-        product_price = int(request.POST.get('product_price'))
+        product_price = float(request.POST.get('product_price'))
         product_type = request.POST.get('product_type')
-        cart.add(product=item, quantity = product_quantity, unit = product_unit, price= product_price , product_type = product_type)
+        product_subunit = (request.POST.get('product_subunit'))
+        product_tax = int(request.POST.get('product_tax'))
+        product_subunit_quantity = int(request.POST.get('product_subunit_quantity'))
+       
+        cart.add(
+          product=item, 
+          quantity = product_quantity, 
+          unit = product_unit, 
+          price= product_price , 
+          product_type = product_type,
+        
+          sub_unit = product_subunit, 
+          tax = product_tax, 
+          subunit_quantity = product_subunit_quantity
+          )
         
         list_quantity = cart.__len__()
         #response = JsonResponse({'Product Name: ': book.book_name})

@@ -22,6 +22,38 @@
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
     <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
     <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+
+
+<style>
+    .product-card {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+
+    .image-container {
+        height: 200px; /* Fixed height for the image container */
+        overflow: hidden;
+    }
+
+    .product-image {
+        width: 100%; /* Make the image responsive within the container */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    .product-details {
+        padding: 20px;
+    }
+
+    .confirm-section {
+        padding: 20px;
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+    }
+</style>
+
 </head>
 
 <body id="page-top">

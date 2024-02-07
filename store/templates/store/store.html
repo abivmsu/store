@@ -4,7 +4,7 @@
 <!-- Begin Page Content -->
 <div class="container-fluid">
      <!-- Page Heading -->
-     <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     <div class="d-sm-flex align-items- justify-content-between mb-4">
        <h1 class="h3 mb-0 text-gray-800">Andelus Store </h1>
       {% if page == 'book' %}
       <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
@@ -16,6 +16,84 @@
  </div>
 
   {% if page == 'book' %}
+
+    {% if request.user.groups.all.0.name == 'Custodian' %}
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">List of BOOKS</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table
+                class="table table-bordered"
+                id="dataTable"
+                width="100%"
+                cellspacing="0"
+              >
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Subject</th>
+                    <th>Grade</th>
+                    <th>Pages</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Subject</th>
+                    <th>Grade</th>
+                    <th>Pages</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                  </tr>
+                </tfoot>
+                <tbody>
+                  {% for book in books %}
+                  <tr>
+                    <td class="align-middle text-center">{{forloop.counter}}</td>
+                    <td class="align-middle text-">{{book.books.book_name}}</td>
+                    <td class="align-middle text-">{{book.books.description}}</td>
+                    <td class="align-middle text-">{{book.books.subject}}</td>
+                    <td class="align-middle text-">{{book.books.grade}}</td>
+                    <td class="align-middle text-">{{book.books.pages}}</td>
+                    <td class="align-middle text-">{{book.quantity}}</td>
+                    <td class="align-middle text-center">
+                        <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm book_detail"
+                          data-toggle="modal" data-target="#detail" 
+                          data-bookid="{{book.id}}"
+                          data-image="{{book.books.image.url}}"
+                          data-bookname="{{book.books.book_name}}"
+                          data-description="{{ book.books.description }}"
+                          data-subject="{{ book.books.subject }}"
+                          data-grade="{{ book.books.grade }}"
+                          data-quantity="{{ book.quantity }}"
+                          data-url="{% url 'store_detail' book.id %}?p=book"
+                          data-addurl="{% url 'product_detail' book.books.id%}?p=book"
+                          data-page="{{ book.books.pages }}">
+                          <i class="fas fa-pen fa-sm text-white-50"></i>
+                          Detail
+                          </a>
+                        
+                      </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+    {% elif request.user.groups.all.0.name == 'Director' %}
+    {% elif request.user.groups.all.0.name == 'Manager' %}
+    {% elif request.user.groups.all.0.name == 'Finance' %}
+    {% endif %}
   <!-- DataTales Example -->
   <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -31,7 +109,7 @@
         >
           <thead>
             <tr>
-              <th>Image</th>
+              <th>No</th>
               <th>Name</th>
               <th>Description</th>
               <th>Subject</th>
@@ -43,7 +121,7 @@
           </thead>
           <tfoot>
             <tr>
-              <th>Image</th>
+              <th>No</th>
               <th>Name</th>
               <th>Description</th>
               <th>Subject</th>
@@ -56,27 +134,40 @@
           <tbody>
             {% for book in books %}
             <tr>
-              <td class="align-middle text-center"><img src={{book.books.image.url}} width="200px"></td>
-              <td class="align-middle text-center">{{book.books.book_name}}</td>
-              <td class="align-middle text-center">{{book.books.description}}</td>
-              <td class="align-middle text-center">{{book.books.subject}}</td>
-              <td class="align-middle text-center">{{book.books.grade}}</td>
-              <td class="align-middle text-center">{{book.books.pages}}</td>
-              <td class="align-middle text-center">{{book.quantity}}</td>
+              <td class="align-middle text-center">{{forloop.counter}}</td>
+              <td class="align-middle text-">{{book.books.book_name}}</td>
+              <td class="align-middle text-">{{book.books.description}}</td>
+              <td class="align-middle text-">{{book.books.subject}}</td>
+              <td class="align-middle text-">{{book.books.grade}}</td>
+              <td class="align-middle text-">{{book.books.pages}}</td>
+              <td class="align-middle text-">{{book.quantity}}</td>
               <td class="align-middle text-center">
-                {% if request.user.groups.all.0.name == 'Custodian' %}
-                <a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
-                <span class="icon text-white-50">
-                    <i class="fas fa-plus-circle"></i>
-                </span>
-                </a>
-                  <a href="{% url 'store_detail' book.id %}?p=book" class="btn btn-info btn-icon-split">
+                {% if request.user.groups.all.0.name == 'Custodian' or request.user.groups.all.0.name == 'Manager' %}
+               
+                  {% comment %} <a href="{% url 'store_detail' book.id %}?p=book" class="btn btn-info btn-icon-split">
                     <span class="icon text-white-50">
                         <i class="fas fa-info-circle"></i>
                     </span>
                     <span class="text">Detail</span>
-                  </a>
-                {% elif request.user.groups.all.0.name == 'Director' %}
+                  </a> {% endcomment %}
+                  <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm book_detail"
+                    data-toggle="modal" data-target="#detail" 
+                    data-bookid="{{book.id}}"
+                    data-image="{{book.books.image.url}}"
+                    data-bookname="{{book.books.book_name}}"
+                    data-description="{{ book.books.description }}"
+                    data-subject="{{ book.books.subject }}"
+                    data-grade="{{ book.books.grade }}"
+                    data-quantity="{{ book.quantity }}"
+                    data-url="{% url 'store_detail' book.id %}?p=book"
+                    data-page="{{ book.books.pages }}"><i
+                    class="fas fa-plus fa-sm text-white-50"></i> Detail</a>
+                  <a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-plus-circle"></i>
+                    </span>
+                    </a>
+                    {% elif request.user.groups.all.0.name == 'Director' %}
                     <a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
                       <span class="icon text-white-50">
                           <i class="fas fa-plus-circle"></i>
@@ -95,7 +186,71 @@
   </div>
 
   {% elif page == 'item' %}
+  
 
+    {% if request.user.groups.all.0.name == 'Custodian' %}
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table
+            class="table table-bordered"
+            id="dataTable"
+            width="100%"
+            cellspacing="0"
+          >
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Action</th>
+              </tr>
+            </tfoot>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td class="align-middle text-center">{{forloop.counter}}</td>
+                <td class="align-middle text-" >{{item.items.item_name}}</td>
+                <td class="align-middle text-" >{{item.items.description}}</td>
+                <td class="align-middle text-" >{{item.quantity}}</td>
+                <td class="align-middle text-center" > 
+                  <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm item_detail"
+                    data-toggle="modal" data-target="#itemdetail" 
+                    data-itemid="{{item.id}}"
+                    data-image="{{item.items.image.url}}"
+                    data-itemname="{{item.items.item_name}}"
+                    data-itemdescription="{{item.items.description}}"
+                    data-itemquantity="{{ item.quantity }}"
+                    data-itemurl="{% url 'store_detail' item.id %}?p=item"
+                    data-itemaddurl="{% url 'product_detail' item.items.id %}?p=item">
+                    <i class="fas fa-pen fa-sm text-white-50"></i> Detail</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  
+    {% elif request.user.groups.all.0.name == 'Director' %}
+    {% elif request.user.groups.all.0.name == 'Manager' %}
+    {% elif request.user.groups.all.0.name == 'Finance' %}
+    {% endif %}
   <!-- DataTales Example -->
   <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -111,7 +266,7 @@
         >
           <thead>
             <tr>
-              <th>Image</th>
+              <th>No</th>
               <th>Name</th>
               <th>Description</th>
               <th>Quantity</th>
@@ -120,7 +275,7 @@
           </thead>
           <tfoot>
             <tr>
-              <th>Image</th>
+              <th>No</th>
               <th>Name</th>
               <th>Description</th>
               <th>Quantity</th>
@@ -130,24 +285,30 @@
           <tbody>
             {% for item in items %}
             <tr>
-              <td class="align-middle text-center" ><img src={{item.items.image.url}} width="200px"></td>
-              <td class="align-middle text-center" >{{item.items.item_name}}</td>
-              <td class="align-middle text-center" >{{item.items.description}}</td>
-              <td class="align-middle text-center" >{{item.quantity}}</td>
+              <td class="align-middle text-center">{{forloop.counter}}</td>
+              <td class="align-middle text-" >{{item.items.item_name}}</td>
+              <td class="align-middle text-" >{{item.items.description}}</td>
+              <td class="align-middle text-" >{{item.quantity}}</td>
               <td class="align-middle text-center" >
-            {% if request.user.groups.all.0.name == 'Custodian' %}
-                <a href="{% url 'product_detail' item.items.id%}?p=item" class="btn btn-success btn-icon-split">
+          {% if request.user.groups.all.0.name == 'Custodian' or request.user.groups.all.0.name == 'Manager' %}
+               
+              
+            <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm item_detail"
+              data-toggle="modal" data-target="#itemdetail" 
+              data-itemid="{{item.id}}"
+              data-image="{{item.items.image.url}}"
+              data-itemname="{{item.items.item_name}}"
+              data-itemdescription="{{item.items.description}}"
+              data-itemquantity="{{ item.quantity }}"
+              data-itemurl="{% url 'store_detail' item.id %}?p=item"><i
+              class="fas fa-plus fa-sm text-white-50"></i> Detail</a>
+
+            <a href="{% url 'product_detail' item.items.id%}?p=item" class="btn btn-success btn-icon-split">
                 <span class="icon text-white-50">
-                    <i class="fas fa-plus-circle"></i>
-                </span>
-            </a>
-              <a href="{% url 'store_detail' item.id %}?p=item" class="btn btn-info btn-icon-split">
-                <span class="icon text-white-50">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                <span class="text">Detail</span>
-            </a>
-            {% elif request.user.groups.all.0.name == 'Director' %}
+                     <i class="fas fa-plus-circle"></i>
+               </span>
+           </a>
+              {% elif request.user.groups.all.0.name == 'Director' %}
             <a href="{% url 'product_detail' item.items.id%}?p=item" class="btn btn-success btn-icon-split">
               <span class="icon text-white-50">
                   <i class="fas fa-plus-circle"></i>
@@ -174,58 +335,259 @@
 
 
     <!-- add book Modal form-->
-    <div class="modal fade" id="add_new_book" tabindex="-1" role="dialog" aria-labelledby="add_newb"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="add_newb">Add new Book </h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Fill the following form to add Book.
-                <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data">
+<!-- Your existing modal structure -->
+<div class="modal fade" id="add_new_book" tabindex="-1" role="dialog" aria-labelledby="add_newb" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="add_newb">Add new Book </h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              Fill the following form to add Book.
+              <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data">
                   {% csrf_token %}
 
-                  {{ book_form.as_p }}
-                  
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" type="submit" >Add</button>
-                </div>
+                  <!-- Render form fields using Bootstrap styling -->
+                  {% for field in book_form %}
+                      <div class="form-group">
+                          {{ field.label_tag }}
+                          {% if field.name == 'image' %}
+                              <div class="custom-file">
+                                  <input type="file" class="custom-file-input" id="{{ field.id }}" name="{{ field.name }}" onchange="updateFileName(this)">
+                                  <label class="custom-file-label" for="{{ field.id }}">Choose file</label>
+                              </div>
+                          {% else %}
+                              {{ field }}
+                          {% endif %}
+                      </div>
+                  {% endfor %}
+
+                  <div class="modal-footer">
+                      <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-info" type="submit">Add</button>
+                  </div>
               </form>
-            </div>
-            </div>
-        </div>
-    </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script>
+  function updateFileName(input) {
+      var fileName = input.files[0].name;
+      var label = input.nextElementSibling;
+      label.innerHTML = fileName;
+  }
+</script>
+
 
     <!-- add item Modal form-->
-    <div class="modal fade" id="add_new_item" tabindex="-1" role="dialog" aria-labelledby="add_newi"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="add_newi">Add new item </h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Fill the following form to add Book.
-                <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
+<!-- Your existing modal structure -->
+<div class="modal fade" id="add_new_item" tabindex="-1" role="dialog" aria-labelledby="add_newi" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="add_newi">Add new Item </h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              Fill the following form to add Item.
+              <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
                   {% csrf_token %}
 
-                  {{ item_form.as_p }}
-                  
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" type="submit" >Add</button>
-                </div>
+                  <!-- Render form fields using Bootstrap styling -->
+                  {% for field in item_form %}
+                      <div class="form-group">
+                          {% if field.name == 'image' %}
+                              <div class="custom-file">
+                                  <input type="file" class="custom-file-input" id="{{ field.id }}" name="{{ field.name }}">
+                                  <label class="custom-file-label" for="{{ field.id }}">Choose file</label>
+                              </div>
+                              <script>
+                                  document.getElementById("{{ field.id }}").addEventListener("change", function() {
+                                      var fileName = this.files[0].name;
+                                      var label = this.nextElementSibling;
+                                      label.innerHTML = fileName;
+                                  });
+                              </script>
+                          {% else %}
+                              {{ field.label_tag }}
+                              {{ field }}
+                          {% endif %}
+                      </div>
+                  {% endfor %}
+
+                  <div class="modal-footer">
+                      <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-info" type="submit">Add</button>
+                  </div>
               </form>
-            </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+
+ <!-- Book Detail Modal -->
+ <div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detail" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+              <h5 class="modal-title" id="detail">Book Details - <span id="modal-booknamfe"></span></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <div class="card">
+                  <div class="row no-gutters">
+                      <div class="col-md-6 text-center">
+                          <img class="img-fluid rounded mt-3 mb-3" id="modal-image" alt="Book Image" style="max-height: 300px;">
+                      </div>
+                      <div class="col-md-6 mt-3">
+                          <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-book"></i> <span id="modal-bookname"></span></h5>
+                              <ul class="list-group list-group-flush">
+                                  <li class="list-group-item"><i class="fas fa-bookmark"></i> <strong>Subject:</strong> <span id="modal-subject"></span></li>
+                                  <li class="list-group-item"><i class="fas fa-graduation-cap"></i> <strong>Grade:</strong> <span id="modal-grade"></span></li>
+                                  <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-description"></span></li>
+                                  <li class="list-group-item"><i class="fas fa-cubes"></i> <strong>Quantity:</strong> <span id="modal-quantity"></span></li>
+                                  <li class="list-group-item"><i class="fas fa-file-alt"></i> <strong>Pages:</strong> <span id="modal-page"></span></li>
+                              </ul>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              {% if request.user.groups.all.0.name == 'Custodian' %}
+                  <a id="book_edit_modal_link" class="btn btn-info" href="#">Edit</a>
+                  <a href="#" id="book_add_modal_link" class="btn btn-success btn-icon-split">
+                    <span class="icon text-white">
+                        <i class="fas fa-plus-circle"></i> Add
+                    </span>
+                    </a>
+              {% endif %}
+          </div>
+      </div>
+  </div>
+</div>
+
+
+ <!-- Item Detail Modal -->
+ 
+ <div class="modal fade" id="itemdetail" tabindex="-1" role="dialog" aria-labelledby="itemdetail" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+              <h5 class="modal-title" id="itemdetail">Item Details - <span id="modal-itemndame"></span></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+            <div class="card">
+                <div class="row no-gutters">
+                    <div class="col-md-6 text-center">
+                        <img class="img-fluid rounded mt-3 mb-3" id="modal-itemimage" alt="Book Image" style="max-height: 300px;">
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <div class="card-body">
+                          <h5 class="card-title"><i class="fas fa-book"></i> <span id="modal-itemname"></span></h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-itemdescription"></span></li>
+                                <li class="list-group-item"><i class="fas fa-cubes"></i> <strong>Quantity:</strong> <span id="modal-itemquantity"></span></li>
+                              </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              {% if request.user.groups.all.0.name == 'Custodian' %}
+                  <a id="item_edit_modal_link" class="btn btn-success" href="#">Edit</a>
+                  <a href="#" id="item_add_modal_link"  class="btn btn-info btn-icon-split">
+                    <span class="icon text-white">
+                        <i class="fas fa-plus-circle"></i> Add
+                  </span>
+                </a>
+              {% endif %}
+          </div>
+      </div>
+  </div>
+</div>
 
 
+<script>
+  // Function to get the CSRF cookie value
+  function getCookie(name) {
+     var cookieValue = null;
+     if (document.cookie && document.cookie !== '') {
+         var cookies = document.cookie.split(';');
+         for (var i = 0; i < cookies.length; i++) {
+             var cookie = jQuery.trim(cookies[i]);
+             // Check if this cookie string begins with the name we want
+             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                 break;
+             }
+         }
+     }
+     return cookieValue;
+ }
+
+$(document).ready(function() {
+ // Open book detail modal
+ $(".book_detail").click(function() {
+   var bookid = $(this).data("bookid");
+   var url = $(this).data("url");
+   var addurl = $(this).data("addurl");
+   var image = $(this).data("image");
+   var bookname = $(this).data("bookname");
+   var subject = $(this).data("subject");
+   var description = $(this).data("description");
+   var quantity = $(this).data("quantity");
+   var page = $(this).data("page");
+   var grade = $(this).data("grade");
+
+   $("#modal-image").attr('src',image);
+   $("#book_edit_modal_link").attr('href', url);
+   $("#book_add_modal_link").attr('href', addurl);
+   $("#modal-bookname").text(bookname);
+   $("#modal-description").text(description);
+   $("#modal-subject").text(subject);
+   $("#modal-quantity").text(quantity);
+   $("#modal-grade").text(grade);
+   $("#modal-page").text(page);
+   
+ });
+ // Open item detail modal
+ $(".item_detail").click(function() {
+   var itemid = $(this).data("itemid");
+   var url = $(this).data("itemurl");
+   var itemaddurl = $(this).data("itemaddurl");
+   var image = $(this).data("image");
+   var itemname = $(this).data("itemname");
+   var description = $(this).data("itemdescription");
+   var quantity = $(this).data("itemquantity");
+
+   $("#modal-itemimage").attr('src',image);
+   $("#item_edit_modal_link").attr('href', url);
+   $("#item_add_modal_link").attr('href', itemaddurl);
+   $("#modal-itemname").text(itemname);
+   $("#modal-itemdescription").text(description);
+   $("#modal-itemquantity").text(quantity);
+ });
+
+});
+</script>
 {% endblock %}

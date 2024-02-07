@@ -16,6 +16,9 @@ urlpatterns = [
     path('finish_order', views.finish_order, name='finish_order'),
     path('orders', views.orders, name='orders'),
     path('order_detail/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('confirm_all_quantities/', views.confirm_all_quantities, name='confirm_all_quantities'),
+    path('issue_quantities/', views.issue_quantities, name='issue_quantities'),
+    path('remove_order', views.remove_order, name='remove_order'),
     # path('item/gebi_book', views.gebi_book_detail, name='gebi_book_detail'),
     # path('item/gebi_item', views.gebi_book_detail, name='gebi_book_detail'),
 

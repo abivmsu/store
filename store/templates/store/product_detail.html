@@ -1,89 +1,120 @@
 {% extends 'base.html' %} 
-{% block title %}Andelus | product_detail{% endblock %} 
+{% block title %}Andelus | Product Detail{% endblock %} 
 {% block content %}
 <!-- Begin Page Content -->
 <div class="container-fluid">
-   <!-- Page Heading -->
-   <div class="d-sm-flex align-items-center justify-content-between mb-4">
-     {% if page == 'book' %}
-     <h1 class="h3 mb-0 text-gray-800">Books </h1>
-     {% comment %} <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-      class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a> {% endcomment %}
-      {% elif page == 'item' %}
-      <h1 class="h3 mb-0 text-gray-800">Items</h1>
-    {% comment %} <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-            class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a> {% endcomment %}
-    {% endif %}
-</div>
-
-<div class="container">
-  <br/>
-  <div class="card mb-3" style="max-width: 100%;">
-    <div class="row no-gutters">
-      <div class="col-md-4">
-        <img src="{{ product.image.url }}" class="card-img" alt="...">
-      </div>
-      <div class="col-md-8">
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-            <h5 class="card-title">{{ product.book_name }}</h5>
-            <p class="card-text justified">{{ product.description }}</p>
-            {{ form.as_p }}
-        <div class="row justify-content-left">
-          <a href="{% url 'index'%}" class="btn btn-secondary">Home</a>
-          {% if page == 'book' %}
-          <input type="hidden" value="book" id="type">
-          {% elif page == 'item' %}
-          <input type="hidden" value="item" id="type">
-          {% endif %}
-          <button type="button" value="{{ product.id }}" class="btn btn-secondary" id="add-list">Add To Cart</button>
-
-        </div>
-      </div>
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        {% if page == 'book' %}
+        <h1 class="h3 mb-0 text-gray-800">Books </h1>
+        {% elif page == 'item' %}
+        <h1 class="h3 mb-0 text-gray-800">Items</h1>
+        {% endif %}
     </div>
-  </div>
-  
 
-</div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-info text-white">
+            <h6 class="m-0 font-weight-bold">Product Details</h6>
+        </div>
+        <div class="card-body">
+            <div class="row no-gutters mb-4">
+                <div class="col-md-4 text-center">
+                    
+                    <img src="{{ product.image.url }}" class="img-fluid rounded mt-3 mb-3" id="modal-image" style="max-height: 300px;" alt="Product Image">
+                </div>
+                <div class="col-md-8">
+                    <div class="text-left">
+                        <h2 class="card-title">{{ product.book_name }}</h2>
+                        <p class="card-text lead">{{ product.description }}</p>
+
+                        {{ form.as_p }}
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <a href="{% url 'index' %}" class="btn btn-secondary"><i class="fas fa-home"></i> Home</a>
+                            </div>
+
+                            <div>
+                                {% if page == 'book' %}
+                                <input type="hidden" value="book" id="type">
+                                {% elif page == 'item' %}
+                                <input type="hidden" value="item" id="type">
+                                {% endif %}
+
+                                <button type="button" value="{{ product.id }}" class="btn btn-info" id="add-list"><i class="fas fa-list"></i> Add To List</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- /.container-fluid -->
 
 <script>
-  // Check if button pressed
-  $(document).on('click', '#add-list', function(e){
-      e.preventDefault();
-      $.ajax({
-          type: 'POST',
-          url: '{% url 'list_add' %}',
-          data: {
-      product_id: $('#add-list').val(),
-      //product_qty: $('#qty-cart option:selected').text(),
-      product_type: $('#type').val(),
-      product_quantity: $('#id_quantity').val(),
-      product_unit: $('#id_unit').val(),
-      product_price: $('#id_price').val(),
-      csrfmiddlewaretoken: '{{ csrf_token }}',
-      action: 'post'
-          },
-  
-          success: function(json){
-              console.log(json.qty)
-              document.getElementById("list_quantity").textContent = json.qty
-          },
-  
-          error: function(xhr, errmsg, err){
-  
-          }
-  
-  
-      });
-  
-  
-  
-  })
-  
-  
-  
-  
-  </script>
-{% endblock%}
+    function updateSubunitQuantity() {
+        var subunitField = document.getElementById('id_subunit');
+        var subunitQuantityField = document.getElementById('id_subunit_quantity');
+        var quantityField = document.getElementById('id_quantity');
+    
+        if (subunitField.value === 'none') {
+            subunitQuantityField.readOnly = true;
+            subunitQuantityField.value = quantityField.value;
+        } else {
+            subunitQuantityField.readOnly = false;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSubunitQuantity();
+    
+        var subunitField = document.getElementById('id_subunit');
+        var quantityField = document.getElementById('id_quantity');
+    
+        subunitField.addEventListener('change', updateSubunitQuantity);
+        quantityField.addEventListener('input', function() {
+            updateSubunitQuantity();
+        });
+    });
+    // Check if button pressed
+    $(document).on('click', '#add-list', function(e){
+        e.preventDefault();
+
+        // Retrieve values from form fields
+        var unit = $('#id_unit').val();
+        var price = $('#id_price').val();
+
+        // Check if unit and price are selected/entered
+        if (unit && price) {
+            // If unit and price are selected/entered, proceed with AJAX call
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'list_add' %}',
+                data: {
+                    product_id: $('#add-list').val(),
+                    product_type: $('#type').val(),
+                    product_quantity: $('#id_quantity').val(),
+                    product_unit: unit,
+                    product_price: price,
+                    product_subunit: $('#id_subunit').val(),
+                    product_subunit_quantity: $('#id_subunit_quantity').val(),
+                    product_tax: $('#id_tax').val(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'post'
+                },
+                success: function(json){
+                    console.log(json.qty)
+                    document.getElementById("list_quantity").textContent = json.qty
+                },
+                error: function(xhr, errmsg, err){
+                    console.log(err);
+                }
+            });
+        } else {
+            // If unit or price is not selected/entered, display an alert message
+            alert('Please select unit and enter price before adding to the list.');
+        }
+    });
+</script>
+{% endblock %}
