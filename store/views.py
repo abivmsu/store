@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden,JsonResponse
 from django.urls import reverse
-from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm
+from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm
 from django.contrib import messages
 from .models import *
 from cart.cart import Cart
 from django.db import transaction
+from django.db.models import Q , F
 import datetime , json
 from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
 # Create your views here.
 
 
@@ -136,7 +138,7 @@ def add_item(request):
                 item = form.save()
                 return redirect(reverse('product_detail', kwargs={'product_id': item.id}) + f'?p=item')
 
-# detail to add quantity and other like price , unit ... to the cart
+# detail to add quantity and other like price , unit ... to the list
 def product_detail(request,product_id):
     product_type = request.GET['p']
     if product_type == 'book':
@@ -318,14 +320,12 @@ def orders(request):
     if request.GET['p'] == 'gebi':
         page =  request.GET['p']
         order_group = OrderGroup.objects.filter( user = request.user, order_type= 'incoming')
-       
-
     elif request.GET['p'] =='wechi':
         page =  request.GET['p']
         if request.user.groups.filter(name='Director').exists():
             order_group = OrderGroup.objects.filter( user = request.user, order_type= 'outgoing')
         elif request.user.groups.filter(name='Custodian').exists():
-            order_group = OrderGroup.objects.filter(order_type= 'outgoing')
+            order_group = OrderGroup.objects.filter(Q(status='Complete') | Q(status='Accepted'), order_type='outgoing')
         else:
             order_group = OrderGroup.objects.filter(order_type= 'outgoing')
     context= {'order_group': order_group, 'page':page}
@@ -384,19 +384,31 @@ def issue_quantities(request):
             item_id = int(item_data['productId'])
             quantity = int(item_data['quantity'])
             product = ordergroup.orders.get(id=item_id)
-            if product.is_book  == True:
+            if product.is_book:
                 store_book = Store.objects.get(books=product.books)
-                store_book.quantity -= quantity
+                difference = quantity - product.issued_quantity
+                new_quantity = store_book.quantity - difference
+                if new_quantity < 0:
+                    raise ValidationError('Store quantity cannot be negative.')
+                store_book.quantity = new_quantity
                 store_book.save()
-            elif product.is_item == True:
-                store_item =Store.objects.get(items=product.items)
-                store_item.quantity -= quantity
+            elif product.is_item:
+                store_item = Store.objects.get(items=product.items)
+                difference = quantity - product.issued_quantity
+                new_quantity = store_item.quantity - difference
+                if new_quantity < 0:
+                    raise ValidationError('Store quantity cannot be negative.')
+                store_item.quantity = new_quantity
                 store_item.save()
+
             product.issued_quantity = quantity
             product.save()
         except (ValueError, TypeError, Order.DoesNotExist):
             return JsonResponse({'error': 'Invalid product data'}, status=400)
-    ordergroup.status='Complete'
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    ordergroup.status = 'Complete'
     ordergroup.save()
     return JsonResponse({'success': 'issued quantities updated successfully'})
 
@@ -422,3 +434,45 @@ def remove_order(request):
         # Perform the removal logic, you can customize this based on your needs
     # Return a JSON response indicating success
     return JsonResponse({'message': 'Order removed successfully'})
+
+
+
+
+  ##################3####################################################33  
+  ##################3####################################################33  
+  ##################3####################################################33  
+  ##################3####################################################33  
+  ##################3####################################################33  
+  ##################3####################################################33  
+
+
+
+
+  
+def product_create(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('product_list')  # Redirect to product list view
+    else:
+        form = ProductForm()
+    return render(request, 'product_create.html', {'form': form})
+
+def product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('product_list')  # Redirect to product list view
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'product_update.html', {'form': form})
+
+def product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        product.delete()
+        return redirect('product_list')  # Redirect to product list view
+    return render(request, 'product_delete.html', {'product': product})

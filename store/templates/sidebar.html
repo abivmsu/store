@@ -65,6 +65,30 @@
                     </div>
                 </div>
             </li>
+                   <!-- Divider -->
+                   <hr class="sidebar-divider">
+
+                     <!-- Heading -->
+            <div class="sidebar-heading">
+                Interface
+            </div>
+
+                   <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#መረካከቢያ"
+                        aria-expanded="true" aria-controls="መረካከቢያ">
+                        <i class="fas fa-fw fa-wrench"></i>
+                        <span>እቃ መረካከቢያ</span>
+                    </a>
+                    <div id="መረካከቢያ" class="collapse" aria-labelledby="headingUtilities"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">list of orders:</h6>
+                            <a class="collapse-item" href="{% url 'orders' %}?p=gebi">አስረክብ</a>
+                            <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ተረከብ</a>
+                            <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ግዢ መጠይቆች</a>
+                        </div>
+                    </div>
+                </li>
         </ul>
 
     {% elif request.user.groups.all.0.name == 'Manager' %} 

@@ -16,14 +16,14 @@
             <div class="col-md-12">
                 <div class="d-flex justify-content-between">
                     <div class="order-detail">
-                        
-                        <span class="ml-2"><strong>Status:</strong> 
+
+                        <span class="ml-2"><strong>Status:</strong>
                             {% if order.status == 'Pending' %}
-                                <span class="badge badge-info badge-lg">{{ order.status }}</span>
+                            <span class="badge badge-info badge-lg">{{ order.status }}</span>
                             {% elif order.status == 'Accepted' %}
-                                <span class="badge badge-warning badge-lg">{{ order.status }}</span>
+                            <span class="badge badge-warning badge-lg">{{ order.status }}</span>
                             {% elif order.status == 'Complete' %}
-                                <span class="badge badge-success badge-lg">{{ order.status }}</span>
+                            <span class="badge badge-success badge-lg">{{ order.status }}</span>
                             {% endif %}
                         </span>
                     </div>
@@ -36,46 +36,110 @@
                         <span class="ml-2"><strong>Requested By:</strong> {{ order.order_by }}</span>
                     </div>
                 </div>
-            </div></div>
-        
-        <div class="container mt-5">
-            <div class="row">
-                {% for product in order.orders.all %}
-                    <div class="col-md-4">
-                        <div class="product-card">
-                            <div class="image-container">
-                                <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="card-img-top product-image" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
-                            </div>
-                            <div class="product-details">
-                                <h5 class="card-title">
-                                    {% if product.is_book %}
-                                        {{ product.books.book_name }}
-                                    {% elif product.is_item %}
-                                        {{ product.items.item_name }}
-                                    {% endif %}
-                                </h5>
-                                <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
-                                <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
-                                <p class="card-text"><strong>Confirmed Quantity:</strong> {{ product.confirmed_quantity }}</p>
-                                <p class="card-text"><strong>issued Quantity:</strong> {{ product.issued_quantity }}</p>
-                            </div>
-                            <div class="confirm-section">
-                                <label for="issuedQuantity{{ product.id }}" class="form-label">Issued Quantity:</label>
-                                <input type="number" class="form-control mb-2 issued-quantity-input" id="issuedQuantity{{ product.id }}" data-product-id="{{ product.id }}" name="confirmed_quantity" value="{{product.issued_quantity}}">
-                                <!-- Remove the individual submit button -->
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="row">
+                    {% for product in order.orders.all %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="card-title mb-0">
+                                        {% if product.is_book %}
+                                            Book: {{ product.books.book_name }}
+                                        {% elif product.is_item %}
+                                            Item: {{ product.items.item_name }}
+                                        {% endif %}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="fas fa-shopping-cart"></i>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="fas fa-ruler"></i>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
+                                                        </div>
+                                                    </div>
+                                                    {% if product.subunit %}
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="fas fa-cubes"></i>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <p class="card-text"><strong>Subunit:</strong> {{ product.subunit }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="fas fa-layer-group"></i>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <p class="card-text"><strong>Subunit Quantity:</strong> {{ product.subunit_quantity }}</p>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                    <!-- Added issued quantity input field and confirmed quantity inside a conditional statement -->
+                                                    {% if product.order_type == 'outgoing' %}
+
+                                                    <!-- Added confirmed quantity -->
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="fas fa-check"></i>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <p class="card-text"><strong>Confirmed Quantity:</strong> {{ product.confirmed_quantity }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Added issued quantity input field -->
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="fas fa-boxes"></i>
+                                                        </div>
+                                                        <div class="col-10">
+                                                            <label for="issuedQuantity">Issued Quantity:</label>
+                                                            <input type="number" id="issuedQuantity{{ product.id }}" class="form-control issued-quantity-input" data-product-id="{{ product.id }}" name="confirmed_quantity" value="{{ product.issued_quantity }}" data-confirmed-quantity="{{ product.confirmed_quantity }}" >
+                                                          </div>
+                                                    </div>
+                                                    {% endif %}
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
-                
+                    {% endfor %}
+                </div>
             </div>
-            
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-info" onclick="issueAllQuantities()"> <i class="fas fa-check"></i> Complete Order</button>
+            </div>
         </div>
-        
-    </div>
-    <div class="text-center">
-        <button type="button" class="btn btn-info" onclick="issueAllQuantities()">Complete Orders</button>
-    </div>
     </div>
     <!-- Include the JavaScript function to collect quantities and send them to the server -->
 
@@ -218,7 +282,7 @@
                             </div>
                             <div class="confirm-section">
                                 <label for="confirmedQuantity{{ product.id }}" class="form-label">Confirm Quantity:</label>
-                                <input type="number" class="form-control mb-2 confirmed-quantity-input" id="confirmedQuantity{{ product.id }}" data-product-id="{{ product.id }}" name="confirmed_quantity" value="{{product.confirmed_quantity}}">
+                                <input type="number" class="form-control mb-2 confirmed-quantity-input" id="confirmedQuantity{{ product.id }}" data-product-id="{{ product.id }}" name="confirmed_quantity" value="{{product.confirmed_quantity}}" max="{{ product.confirmed_quantity }}">
                                 <!-- Remove the individual submit button -->
                             </div>
                         </div>
@@ -310,14 +374,32 @@
     function issueAllQuantities() {
         var orderGroupId = {{ order.id }};
         var issuedQuantities = [];
-    
+        var validationError = false;
+        var invalidProductId = null;
+        
         // Collect confirmed quantities for all products
         $(".issued-quantity-input").each(function() {
             var productId = $(this).data("product-id");
             var quantity = $(this).val();
+            var confirmedQuantity = $(this).data("confirmed-quantity"); // Get confirmed quantity from data attribute
+        
+            // Validate quantity
+            if (parseInt(quantity) > parseInt(confirmedQuantity)) {
+               // alert("Issued quantity cannot exceed confirmed quantity for product ID: " + productId);
+                validationError = true;
+                invalidProductId = productId; // Store the ID of the invalid product
+                return false; // Exit the loop
+            }
+        
             issuedQuantities.push({ productId: productId, quantity: quantity });
         });
-    
+        
+        if (validationError) {
+            // Highlight or display error message for the invalid input
+            $(".issued-quantity-input[data-product-id='" + invalidProductId + "']").addClass("is-invalid");
+            return; // Exit the function if validation error occurs
+        }
+        
         // Get the CSRF token from the cookie
         var csrftoken = getCookie('csrftoken');
     
@@ -334,10 +416,10 @@
                 console.log(response);
                 location.reload(true);
 
-    
+                
                 // Reload only the content within the container with ID "order-details-container"
                 $("#order-details-container").load(window.location.href + " #order-details-container");
-    
+                    window.location.href = "{% url 'orders' %}?p=wechi";
                 // Handle any additional actions after reloading
                 // ...
     
@@ -345,27 +427,28 @@
             error: function(xhr, textStatus, errorThrown) {
                 console.log("Error:", textStatus, errorThrown);
                 console.log("Response:", xhr.responseText);
+                alert("Error: " + xhr.responseJSON.error); // Display the error message to the user
             }
         });
     }
     
-  // Function to get CSRF token from cookie
-  function getCookie(name) {
-      var cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-          var cookies = document.cookie.split(';');
-          for (var i = 0; i < cookies.length; i++) {
-              var cookie = cookies[i].trim();
-              // Check if the cookie name matches the expected pattern
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                  break;
-              }
-          }
-      }
-      return cookieValue;
-  }
-// Add this script at the end of your JavaScript file or inside <script> tags
+    // Function to get CSRF token from cookie
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Check if the cookie name matches the expected pattern
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    // Add this script at the end of your JavaScript file or inside <script> tags
     $(document).ready(function() {
         var productIdToRemove;
     

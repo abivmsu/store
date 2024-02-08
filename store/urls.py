@@ -26,4 +26,17 @@ urlpatterns = [
     path('addb/', views.add_book, name='add_book'),
     path('addi/', views.add_item, name='add_item'),
     # path('create/store/', views.create_store, name='create_store'),
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+    path('product/create/', views.product_create, name='product_create'),
+    path('product/<int:pk>/update/', views.product_update, name='product_update'),
+    path('product/<int:pk>/delete/', views.product_delete, name='product_delete'),
+   
+
 ]
+

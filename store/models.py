@@ -102,3 +102,50 @@ class Store(models.Model):
     is_item = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.books } - {self.items}"
+
+
+
+
+
+
+
+###############################################################################################################
+###############################################################################################################
+###############################################################################################################
+
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class ProductGiven(models.Model):
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product, through='ProductGivenDetail')
+    date_requested = models.DateField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Product Given"
+        verbose_name_plural = "Products Given"
+
+    def __str__(self):
+        return f"{self.teacher.username} - {self.date_requested}"
+
+class ProductGivenDetail(models.Model):
+    product_given = models.ForeignKey(ProductGiven, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    date_given = models.DateField()
+    date_returned = models.DateField(blank=True, null=True)
+    depreciation_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Product Given Detail"
+        verbose_name_plural = "Product Given Details"
+
+    def __str__(self):
+        return f"{self.product.name} - {self.product_given.teacher.username} - {self.date_given}"
