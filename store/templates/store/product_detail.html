@@ -40,8 +40,11 @@
                                 {% elif page == 'item' %}
                                 <input type="hidden" value="item" id="type">
                                 {% endif %}
-
-                                <button type="button" value="{{ product.id }}" class="btn btn-info" id="add-list"><i class="fas fa-list"></i> Add To List</button>
+                                {% if request.user.groups.all.0.name != 'Custodian' %}
+                                    <button type="button" value="{{ product.id }}" class="btn btn-info" id="aadd-list"><i class="fas fa-list"></i> Add To List</button>
+                                {% else %}
+                                    <button type="button" value="{{ product.id }}" class="btn btn-info" id="add-list"><i class="fas fa-list"></i> Add To List</button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -77,6 +80,7 @@
             updateSubunitQuantity();
         });
     });
+
     // Check if button pressed
     $(document).on('click', '#add-list', function(e){
         e.preventDefault();
@@ -116,5 +120,102 @@
             alert('Please select unit and enter price before adding to the list.');
         }
     });
+    
+    $(document).on('click', '#aadd-list', function(e){
+        e.preventDefault();
+        // Retrieve values from form fields
+        var unit = $('#id_unit').val();
+        var quantity = $('#id_quantity').val();
+        var productt_quantity = {{ product_quantity }} // Ensure product_quntity is rendered as an integer
+        console.log(productt_quantity)
+        console.log(quantity)
+        if (unit) {
+            if (parseInt(quantity) <= productt_quantity) { // Ensure quantity is parsed as an integer
+                // Quantity is within or equal to available quantity, proceed with AJAX call
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'list_add' %}',
+                    data: {
+                        product_id: $('#aadd-list').val(),
+                        product_type: $('#type').val(),
+                        product_quantity: $('#id_quantity').val(),
+                        product_unit: unit,
+                        product_subunit: $('#id_subunit').val(),
+                        product_subunit_quantity: $('#id_subunit_quantity').val(),
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        action: 'post'
+                    },
+                    success: function(json){
+                        console.log(json.qty)
+                        document.getElementById("list_quantity").textContent = json.qty
+                    },
+                    error: function(xhr, errmsg, err){
+                        console.log(err);
+                    }
+                });
+            } else {
+                // Quantity exceeds available quantity, show alert
+                alert('Quantity exceeds available quantity.');
+            }
+        } else {
+            // If unit is not selected, display an alert message
+            alert('Please select unit before adding to the list.');
+        }
+    });
+    
+    {% comment %} $(document).on('click', '#aadd-list', function(e){
+        e.preventDefault();
+        // Retrieve values from form fields
+        var unit = $('#id_unit').val();
+        var quantity = $('#id_quantity').val();
+        var product_quantity = {{ product_quantity }}
+        var errorMessages = [];
+        
+        // Check if unit is selected
+        if (!unit) {
+            errorMessages.push('Please select a unit.');
+        }
+        
+        // Check if quantity is valid
+        if (!quantity || parseInt(quantity) > product_quantity) {
+            errorMessages.push('Please enter a valid quantity less than or equal to ' + product_quantity + '.');
+        }
+        console.log(errorMessages[1])
+        if (errorMessages.length === 0) {
+            // If no errors, proceed with AJAX call
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'list_add' %}',
+                data: {
+                    product_id: $('#aadd-list').val(),
+                    product_type: $('#type').val(),
+                    product_quantity: quantity,
+                    product_unit: unit,
+                    product_subunit: $('#id_subunit').val(),
+                    product_subunit_quantity: $('#id_subunit_quantity').val(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'post'
+                },
+                success: function(json){
+                    console.log(json.qty)
+                    document.getElementById("list_quantity").textContent = json.qty
+                },
+                error: function(xhr, errmsg, err){
+                    console.log(err);
+                }
+            });
+        } else {
+            // Display error messages next to the respective input fields
+            if (!unit) {
+                $('#id_unit').next('.error-message').text(errorMessages[0]).show();
+            }
+            if (!quantity || parseInt(quantity) > product_quantity) {
+                console.log("asdsda")
+                $('#id_quantity').next('.error-message').text(errorMessages[1]).show();
+            }
+        }
+    });
+      {% endcomment %}
+    
 </script>
 {% endblock %}

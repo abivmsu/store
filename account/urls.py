@@ -14,5 +14,7 @@ urlpatterns = [
     path('activate_user', views.activate_user, name='activate_user'),
    # path('user/<str:userr_id>/', views.user_detail, name='user_detail'),
 
+   path('teacher_create', views.teacher_create, name='teacher_create'),
+   path('teacher_list', views.teacher_list, name='teacher_list'),
   # path('edit_category/<int:cat_id>/', views.edit_category, name='edit_category'),
 ]

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import ProfileForm , UserForm	, GroupForm
+from .forms import ProfileForm , UserForm	, GroupForm, TeacherForm
 from django.contrib.auth.models import User, Group
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -123,3 +123,25 @@ def log_out(request):
 	messages.success(request, ("You have been logged out"))
 	return redirect('log_in')
 
+def teacher_create(request):
+    if request.method == 'POST':
+        form = TeacherForm(request.POST)
+        if form.is_valid():
+            teacher = form.save(commit=False)
+            teacher.set_password('1234')
+            teacher.save()
+            # Add the user to the "teacher" group
+            teacher_group = Group.objects.get(name='Teacher')
+            teacher.groups.add(teacher_group)
+            # Redirect to a success page or teacher list view
+            return redirect('teacher_list')
+        else:
+            # Form is not valid, render the form with errors
+            return render(request, 'teacher_list.html', {'form': form})
+
+   
+
+def teacher_list(request):
+    form = TeacherForm()
+    teachers = User.objects.filter(groups__name='Teacher')
+    return render(request, 'teacher_list.html', {'teachers': teachers, 'form': form})

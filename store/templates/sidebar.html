@@ -82,13 +82,22 @@
                     <div id="መረካከቢያ" class="collapse" aria-labelledby="headingUtilities"
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">list of orders:</h6>
-                            <a class="collapse-item" href="{% url 'orders' %}?p=gebi">አስረክብ</a>
+                            <h6 class="collapse-header">lists:</h6>
+                            <a class="collapse-item" href="{% url 'teachers_list' %}?p=gebi">List</a>
+                            <a class="collapse-item"data-toggle="modal" data-target="#comingSoonModal" href="#">አስረክብ</a>
+                            <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">ተረከብ</a>
+                            <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">ግዢ መጠይቆች</a>
+                            {% comment %} <a class="collapse-item" href="{% url 'asrekeb' %}?p=gebi">አስረክብ</a>
                             <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ተረከብ</a>
-                            <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ግዢ መጠይቆች</a>
+                            <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ግዢ መጠይቆች</a> {% endcomment %}
                         </div>
                     </div>
                 </li>
+                {% comment %} <li class="nav-item">
+                    <a class="nav-link" href="{% url 'teacher_list' %}">
+                        <i class="fas fa-fw fa-table"></i>
+                        <span>Teachers</span></a>
+                </li> {% endcomment %}
         </ul>
 
     {% elif request.user.groups.all.0.name == 'Manager' %} 
@@ -176,11 +185,11 @@
                     <h6 class="collapse-header">Administrators:</h6>
                     <a class="collapse-item" href="{% url 'user_list' %}">የ አድሚን ዝርዝር</a>
                     <a class="collapse-item" href="{% url 'create_user' %}">አዲስ አድሚን</a>
-                    <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
-                    <div class="collapse-divider"></div>
+                   
+                    {% comment %} <div class="collapse-divider"></div>
                     <h6 class="collapse-header">Other Pages:</h6>
                     <a class="collapse-item" href="404.html">404 Page</a>
-                    <a class="collapse-item" href="blank.html">Blank Page</a>
+                    <a class="collapse-item" href="blank.html">Blank Page</a> {% endcomment %}
                 </div>
             </div>
         </li>
@@ -216,28 +225,35 @@
 
         <!-- Heading -->
         <div class="sidebar-heading">
-            Administrators
+            Admins
         </div>
 
          <!-- Nav Item - Charts -->
-         <li class="nav-item">
+         {% comment %} <li class="nav-item">
             <a class="nav-link" href="charts.html">
                 <i class="fas fa-fw fa-chart-area"></i>
                 <span>Charts</span></a>
+        </li> {% endcomment %}
+       
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'teacher_list' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Teachers</span></a>
         </li>
-
            <!-- Nav Item - Pages Collapse Menu -->
            <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#requests"
                 aria-expanded="true" aria-controls="collapsePages">
-                <i class="fas fa-fw fa-user"></i>
-                <span>ጠይቅ</span>
+                <i class="fas fa-fw fa-list"></i>
+                <span>Request</span>
             </a>
             <div id="requests" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     <h6 class="collapse-header">የመጠይቅ አይነቶች:</h6>
                     <a class="collapse-item" href="{% url 'book_store' %}">Books</a>
                     <a class="collapse-item" href="{% url 'item_store' %}">Items</a>
+                    <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">ግዢ ጠይቅ</a>
+                
                 </div>
             </div>
         </li>
@@ -252,19 +268,14 @@
                 <div class="bg-white py-2 collapse-inner rounded">
                     <h6 class="collapse-header">የመጠይቅ አይነቶች:</h6>
                     <a class="collapse-item" href="{% url 'orders' %}?p=wechi">የ እቃ ወጪ መጠይቆቼ</a>
-                    <a class="collapse-item" href="{% url 'user_list' %}">የ ግዢ መጠይቆቼ</a>
-                    <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
+                    <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">የ ግዢ መጠይቆቼ</a>
+                    
                 </div>
             </div>
         </li>
 
        
-        <!-- Nav Item - Tables -->
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Tables</span></a>
-        </li>
+      
 
         <!-- Divider -->
         <hr class="sidebar-divider d-none d-md-block">

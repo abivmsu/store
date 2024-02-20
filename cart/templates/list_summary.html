@@ -9,128 +9,236 @@
 </div>
 
 {% if request.user.groups.all.0.name == 'Custodian' %}
-<section class="h-100 gradient-custom ">
-  <div class="container">
-      <div class="row justify-content-center">
-          <div class="col-md-8">
-              <div class="card mb-4">
-                  <div class="card-header bg-info text-white">
-                      <h5 class="mb-0">List - {{ cart|length }} products</h5>
-                  </div>
-                  <div class="card-body">
-                      <!-- Single item -->
-                      {% for product in products %}
-                      <div class="row mb-4">
-                          <div class="col-lg-4">
-                              <!-- Image -->
-                              <div class="bg-image hover-overlay hover-zoom ripple rounded" data-mdb-ripple-color="light">
-                                  <img src="{{ product.image.url }}" class="w-100" alt="Product Image" />
-                              </div>
-                              <!-- Image -->
-                          </div>
-                          <div class="col-lg-8">
-                              <!-- Data -->
-                              {% if product.p_type == 'book' %}
-                              <p><strong>{{ product.subject }} {{ product.book_name }}</strong></p>
-                              <p>Grade: <strong>{{ product.grade }}</strong></p>
-                              <p>Description: <strong>{{ product.description }}</strong></p>
-                              <p>Pages: <strong>{{ product.pages }} - ገፅ</strong></p>
-                              {% else %}
-                              <p><strong>{{ product.item_name }}</strong></p>
-                              <p>Description: <strong>{{ product.description }}</strong></p>
-                              {% endif %}
-                              <!-- Quantity -->
-                              <div class="input-group mb-3">
-                                  <button class="btn btn-primary" type="button"
-                                      onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
-                                      <i class="fas fa-minus"></i>
-                                  </button>
-                                  <input min="1" style="text-align: center;" name="quantity" value="{{ product.quantity }}"
-                                  type="number" class="form-control idd_quantity" />
-                                  <button class="btn btn-primary" type="button"
-                                  onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
-                                  <i class="fas fa-plus"></i>
-                                </button>
-                              </div>
-                              <!-- Quantity -->
-                              <div class="d-grid gap-2">
-                                <p> Unit: <strong>{{ product.unit }}</strong></p>
-                                <p> Sub Qty + Unit: <strong>{{ product.subunit_quantity }} {{ product.sub_unit }}</strong></p>
-                              </div>
-                              <!-- Price -->
-                              <div class="input-group mb-3">
-                                <span class="input-group-text">Unit Price:</span>
-                                <input min="0" style="text-align: center;" name="price" value="{{ product.price }}"
-                                type="number" class="form-control idd_price" />
-                                <span class="input-group-text">ብር</span>
-                              </div>
-                  
-                                <p>Total: <strong> {{ product.total}} ብር</strong></p>
-                                <p>Tax: {{ product.tax }}% of {{product.total}} ብር =<strong> {{ product.price_tax|floatformat:2}} ብር</strong></p>
-                                <p>Total Price(with tax): <strong>{{ product.total_price }} ብር</strong></p>
-                                <!-- Price -->
+    <section class="h-100 gradient-custom ">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">List - {{ cart|length }} products</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Single item -->
+                        {% for product in products %}
+                        <div class="row mb-4">
+                            <div class="col-lg-4">
+                                <!-- Image -->
+                                <div class="bg-image hover-overlay hover-zoom ripple rounded" data-mdb-ripple-color="light">
+                                    <img src="{{ product.image.url }}" class="w-100" alt="Product Image" />
+                                </div>
+                                <!-- Image -->
+                            </div>
+                            <div class="col-lg-8">
+                                <!-- Data -->
+                                {% if product.p_type == 'book' %}
+                                <p><strong>{{ product.subject }} {{ product.book_name }}</strong></p>
+                                <p>Grade: <strong>{{ product.grade }}</strong></p>
+                                <p>Description: <strong>{{ product.description }}</strong></p>
+                                <p>Pages: <strong>{{ product.pages }} - ገፅ</strong></p>
+                                {% else %}
+                                <p><strong>{{ product.item_name }}</strong></p>
+                                <p>Description: <strong>{{ product.description }}</strong></p>
+                                {% endif %}
+                                <!-- Quantity -->
+                                <div class="input-group mb-3">
+                                    <button class="btn btn-primary" type="button"
+                                        onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input min="1" style="text-align: center;" name="quantity" value="{{ product.quantity }}"
+                                    type="number" class="form-control idd_quantity" />
+                                    <button class="btn btn-primary" type="button"
+                                    onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                                    <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <!-- Quantity -->
                                 <div class="d-grid gap-2">
-                                  <button type="button" data-index="{{ product.id }}_{{ product.p_type }}"
-                                  class="btn btn-danger btn-sm remove-cart" data-mdb-toggle="tooltip"
-                                  title="Remove item">
-                                      <i class="fas fa-trash me-1"></i> Remove
-                                  </button>
-                                  <button type="button" data-index="{{ product.id }}_{{ product.p_type }}"
-                                      class="btn btn-info btn-sm update-cart" data-mdb-toggle="tooltip"
-                                      title="Update your list">
-                                      <i class="fas fa-check me-1"></i> Update
-                                  </button>
-                              </div>
-                              <!-- Data -->
-                          </div>
-                      </div>
-                      <!-- Single item -->
-                      <hr class="my-4" />
-                      {% endfor %}
-                  </div>
-              </div>
-          </div>
-          <div class="col-md-4">
-              <div class="card mb-4">
-                  <div class="card-header bg-info text-white">
-                      <h5 class="mb-0">Summary</h5>
-                  </div>
-                  <div class="card-body">
-                      <ul class="list-group list-group-flush">
-                          {% for product in products %}
-                          <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
-                              {{ product }} ({{ product.quantity }} x {{ product.price }}) <span><strong>{{ product.total_price }}
-                                      ብር</strong></span>
-                          </li>
-                          {% endfor %}
-                          <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
-                              <div>
-                                  <strong>አጠቃላይ ብር</strong>
-                                  <p class="mb-0">( የ ግዢ )</p>
-                              </div>
-                              <span><strong>{{ overall_total }} ብር</strong></span>
-                          </li>
-                      </ul>
-                      {% if request.user.groups.all.0.name == 'Custodian' %}
-                      <button type="button" data-toggle="modal" data-target="#finish" class="btn btn-info btn-lg btn-block">
-                          Continue
-                      </button>
-                      {% elif request.user.groups.all.0.name == 'Director' %}
-                      <button type="button" data-toggle="modal" data-target="#confirm"
-                          class="btn btn-info btn-lg btn-block">
-                          Finish
-                      </button>
-                      {% endif %}
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>
-</section>
+                                    <p> Unit: <strong>{{ product.unit }}</strong></p>
+                                    <p> Sub Qty + Unit: <strong>{{ product.subunit_quantity }} {{ product.sub_unit }}</strong></p>
+                                </div>
+                                <!-- Price -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Unit Price:</span>
+                                    <input min="0" style="text-align: center;" name="price" value="{{ product.price }}"
+                                    type="number" class="form-control idd_price" />
+                                    <span class="input-group-text">ብር</span>
+                                </div>
+                    
+                                    <p>Total: <strong> {{ product.total}} ብር</strong></p>
+                                    <p>Tax: {{ product.tax }}% of {{product.total}} ብር =<strong> {{ product.price_tax|floatformat:2}} ብር</strong></p>
+                                    <p>Total Price(with tax): <strong>{{ product.total_price }} ብር</strong></p>
+                                    <!-- Price -->
+                                    <div class="d-grid gap-2">
+                                    <button type="button" data-index="{{ product.id }}_{{ product.p_type }}"
+                                    class="btn btn-danger btn-sm remove-cart" data-mdb-toggle="tooltip"
+                                    title="Remove item">
+                                        <i class="fas fa-trash me-1"></i> Remove
+                                    </button>
+                                    <button type="button" data-index="{{ product.id }}_{{ product.p_type }}"
+                                        class="btn btn-info btn-sm update-cart" data-mdb-toggle="tooltip"
+                                        title="Update your list">
+                                        <i class="fas fa-check me-1"></i> Update
+                                    </button>
+                                </div>
+                                <!-- Data -->
+                            </div>
+                        </div>
+                        <!-- Single item -->
+                        <hr class="my-4" />
+                        {% empty%}
+                        <p class="mb-0">There are no products in the list!</p>   
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if products %}
+                            <ul class="list-group list-group-flush">
+                                {% for product in products %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
+                                    {{ product }} ({{ product.quantity }} x {{ product.price }}) <span><strong>{{ product.total_price }}
+                                            ብር</strong></span>
+                                </li>
+                                {% endfor %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
+                                    <div>
+                                        <strong>አጠቃላይ ብር</strong>
+                                        <p class="mb-0">( የ ግዢ )</p>
+                                    </div>
+                                    <span><strong>{{ overall_total }} ብር</strong></span>
+                                </li>
+                            </ul>
+                            <button type="button" data-toggle="modal" data-target="#finish" class="btn btn-info btn-lg btn-block">
+                                Continue
+                            </button>
+                        {% else %}
+                        <p class="mb-0">NO Summary!</p>   
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
 
 {% elif request.user.groups.all.0.name == 'Director' %}
+    <section class="h-100 gradient-custom ">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">List - {{ cart|length }} products</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Single item -->
+                            {% for product in products %}
+                                <div class="row mb-4">
+                                    <div class="col-lg-4">
+                                        <!-- Image -->
+                                        <div class="bg-image hover-overlay hover-zoom ripple rounded" data-mdb-ripple-color="light">
+                                            <img src="{{ product.image.url }}" class="w-100" alt="Product Image" />
+                                        </div>
+                                        <!-- Image -->
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <!-- Data -->
+                                        {% if product.p_type == 'book' %}
+                                            <p><strong>{{ product.subject }} {{ product.book_name }}</strong></p>
+                                            <p>Grade: <strong>{{ product.grade }}</strong></p>
+                                            <p>Description: <strong>{{ product.description }}</strong></p>
+                                            <p>Pages: <strong>{{ product.pages }} - ገፅ</strong></p>
+                                        {% else %}
+                                            <p><strong>{{ product.item_name }}</strong></p>
+                                            <p>Description: <strong>{{ product.description }}</strong></p>
+                                        {% endif %}
+                                        <!-- Quantity -->
+                                        <div class="input-group mb-3">
+                                            <button class="btn btn-primary" type="button"
+                                                onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input min="1" max="{{ product.store_quantity }}" style="text-align: center;" name="quantity" value="{{ product.quantity }}"
+                                            type="number" class="form-control idd_quantity" />
+                                            <button class="btn btn-primary" type="button"
+                                            onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                                            <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Quantity -->
+                                        <div class="d-grid gap-2">
+                                            <p> Unit: <strong>{{ product.unit }}</strong></p>
+                                            <p> Sub Qty + Unit: <strong>{{ product.subunit_quantity }} {{ product.sub_unit }}</strong></p>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2">
+                                            <button type="button" data-index="{{ product.id }}_{{ product.p_type }}"
+                                            class="btn btn-danger btn-sm remove-cart" data-mdb-toggle="tooltip"
+                                            title="Remove item">
+                                                <i class="fas fa-trash me-1"></i> Remove
+                                            </button>
+                                            <button type="button" data-index="{{ product.id }}_{{ product.p_type }}"
+                                                class="btn btn-info btn-sm update-cart" data-mdb-toggle="tooltip"
+                                                title="Update your list">
+                                                <i class="fas fa-check me-1"></i> Update
+                                            </button>
+                                        </div>
+                                        <!-- Data -->
+                                    </div>
+                                </div>
+                            <!-- Single item -->
+                            <hr class="my-4" />
+                            {% empty %}
+                                <p class="mb-0">There are no products in the list!</p>  
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if products %}
+                                <ul class="list-group list-group-flush">
+                                    {% for product in products %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
+                                        {{ product }}  <span><strong>{{ product.quantity }}
+                                            {{ product.unit }}</strong></span>
+                                    </li>
+                                    {% endfor %}
+
+                                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
+                                        <div>
+                                            <strong>አጠቃላይ ብዛት</strong>
+                                            <p class="mb-0">( የመጠይቅ )</p>
+                                        </div>
+                                        <span><strong>{{ total_quantity }} Products </strong></span>
+                                    </li>
+                                </ul>
+                                <button type="button" data-toggle="modal" data-target="#confirm"
+                                class="btn btn-info btn-lg btn-block">
+                                Finish
+                                </button>
+                            {% else %}
+                            <p class="mb-0">No Summary!</p> 
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endif %}
-<section class="h-100 gradient-custom ">
+
+{% comment %} <section class="h-100 gradient-custom ">
   <div class="container">
       <div class="row justify-content-center">
           <div class="col-md-8">
@@ -244,7 +352,7 @@
           </div>
       </div>
   </div>
-</section>
+</section> {% endcomment %}
 
 </div>
 <!-- /.container-fluid -->

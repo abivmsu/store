@@ -54,7 +54,7 @@ class Order(models.Model):
     quantity = models.IntegerField(default=0)
     confirmed_quantity = models.IntegerField(default=0)
     issued_quantity = models.IntegerField(default=0)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2,default=0.00 )
     tax = models.IntegerField(default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPES)
@@ -122,7 +122,8 @@ class Product(models.Model):
         return self.name
 
 class ProductGiven(models.Model):
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products_given')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products_received') 
     products = models.ManyToManyField(Product, through='ProductGivenDetail')
     date_requested = models.DateField(auto_now_add=True)
     notes = models.TextField(blank=True, null=True)

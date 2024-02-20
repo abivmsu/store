@@ -6,10 +6,10 @@
      <!-- Page Heading -->
      <div class="d-sm-flex align-items- justify-content-between mb-4">
        <h1 class="h3 mb-0 text-gray-800">Andelus Store </h1>
-      {% if page == 'book' %}
+      {% if page == 'book' and request.user.groups.all.0.name == 'Custodian'  %}
       <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
        class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
-       {% elif page == 'item' %}
+       {% elif page == 'item' and request.user.groups.all.0.name == 'Custodian'  %}
      <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
              class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
      {% endif %}
@@ -18,6 +18,7 @@
   {% if page == 'book' %}
 
     {% if request.user.groups.all.0.name == 'Custodian' %}
+        
         <div class="card shadow mb-4">
           <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-info">List of BOOKS</h6>
@@ -90,169 +91,343 @@
           </div>
         </div>
 
+
+        {% comment %} #*********************************************************************
+
+        ########################    Directore     ########################
+
+        #*********************************************************************   {% endcomment %}
+          
     {% elif request.user.groups.all.0.name == 'Director' %}
+
+          
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">List of BOOKS</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table
+                class="table table-bordered"
+                id="dataTable"
+                width="100%"
+                cellspacing="0"
+              >
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Book Name</th>
+                    <th>Subject</th>
+                    <th>Grade</th>
+                    <th>Pages</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Grade</th>
+                    <th>Pages</th>
+                    <th>Action</th>
+                  </tr>
+                </tfoot>
+                <tbody>
+                  {% for book in books %}
+                  <tr>
+                    <td class="align-middle text-center">{{forloop.counter}}</td>
+                    <td class="align-middle text-">{{book.books.book_name}}</td>
+                    <td class="align-middle text-">{{book.books.subject}}</td>
+                    <td class="align-middle text-">{{book.books.grade}}</td>
+                    <td class="align-middle text-">{{book.books.pages}}</td>
+                    <td class="align-middle text-center">
+                          <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm book_detail"
+                          data-toggle="modal" data-target="#detail" 
+                          data-bookid="{{book.id}}"
+                          data-image="{{book.books.image.url}}"
+                          data-bookname="{{book.books.book_name}}"
+                          data-description="{{ book.books.description }}"
+                          data-subject="{{ book.books.subject }}"
+                          data-grade="{{ book.books.grade }}"
+                          data-quantity="{{ book.quantity }}"
+                          data-url="{% url 'store_detail' book.id %}?p=book"
+                          data-addurl="{% url 'product_detail' book.books.id%}?p=book"
+                          data-page="{{ book.books.pages }}">
+                          <i class="fas fa-pen fa-sm text-white-50"></i>
+                          Detail
+                          </a>
+
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
     {% elif request.user.groups.all.0.name == 'Manager' %}
+        
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-info">List of BOOKS</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table
+              class="table table-bordered"
+              id="dataTable"
+              width="100%"
+              cellspacing="0"
+            >
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>Pages</th>
+                  <th>Quantity</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <th>No</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>Pages</th>
+                  <th>Quantity</th>
+                  <th>Action</th>
+                </tr>
+              </tfoot>
+              <tbody>
+                {% for book in books %}
+                <tr>
+                  <td class="align-middle text-center">{{forloop.counter}}</td>
+                  <td class="align-middle text-">{{book.books.book_name}}</td>
+                  <td class="align-middle text-">{{book.books.description}}</td>
+                  <td class="align-middle text-">{{book.books.subject}}</td>
+                  <td class="align-middle text-">{{book.books.grade}}</td>
+                  <td class="align-middle text-">{{book.books.pages}}</td>
+                  <td class="align-middle text-">{{book.quantity}}</td>
+                  <td class="align-middle text-center">
+                      <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm book_detail"
+                        data-toggle="modal" data-target="#detail" 
+                        data-bookid="{{book.id}}"
+                        data-image="{{book.books.image.url}}"
+                        data-bookname="{{book.books.book_name}}"
+                        data-description="{{ book.books.description }}"
+                        data-subject="{{ book.books.subject }}"
+                        data-grade="{{ book.books.grade }}"
+                        data-quantity="{{ book.quantity }}"
+                        data-url="{% url 'store_detail' book.id %}?p=book"
+                        data-addurl="{% url 'product_detail' book.books.id%}?p=book"
+                        data-page="{{ book.books.pages }}">
+                        <i class="fas fa-pen fa-sm text-white-50"></i>
+                        Detail
+                        </a>
+                      
+                    </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     {% elif request.user.groups.all.0.name == 'Finance' %}
     {% endif %}
-  <!-- DataTales Example -->
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-info">List of BOOKS</h6>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table
-          class="table table-bordered"
-          id="dataTable"
-          width="100%"
-          cellspacing="0"
-        >
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Subject</th>
-              <th>Grade</th>
-              <th>Pages</th>
-              <th>Quantity</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tfoot>
-            <tr>
-              <th>No</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Subject</th>
-              <th>Grade</th>
-              <th>Pages</th>
-              <th>Quantity</th>
-              <th>Action</th>
-            </tr>
-          </tfoot>
-          <tbody>
-            {% for book in books %}
-            <tr>
-              <td class="align-middle text-center">{{forloop.counter}}</td>
-              <td class="align-middle text-">{{book.books.book_name}}</td>
-              <td class="align-middle text-">{{book.books.description}}</td>
-              <td class="align-middle text-">{{book.books.subject}}</td>
-              <td class="align-middle text-">{{book.books.grade}}</td>
-              <td class="align-middle text-">{{book.books.pages}}</td>
-              <td class="align-middle text-">{{book.quantity}}</td>
-              <td class="align-middle text-center">
-                {% if request.user.groups.all.0.name == 'Custodian' or request.user.groups.all.0.name == 'Manager' %}
-               
-                  {% comment %} <a href="{% url 'store_detail' book.id %}?p=book" class="btn btn-info btn-icon-split">
-                    <span class="icon text-white-50">
-                        <i class="fas fa-info-circle"></i>
-                    </span>
-                    <span class="text">Detail</span>
-                  </a> {% endcomment %}
-                  <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm book_detail"
-                    data-toggle="modal" data-target="#detail" 
-                    data-bookid="{{book.id}}"
-                    data-image="{{book.books.image.url}}"
-                    data-bookname="{{book.books.book_name}}"
-                    data-description="{{ book.books.description }}"
-                    data-subject="{{ book.books.subject }}"
-                    data-grade="{{ book.books.grade }}"
-                    data-quantity="{{ book.quantity }}"
-                    data-url="{% url 'store_detail' book.id %}?p=book"
-                    data-page="{{ book.books.pages }}"><i
-                    class="fas fa-plus fa-sm text-white-50"></i> Detail</a>
-                  <a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
-                    <span class="icon text-white-50">
-                        <i class="fas fa-plus-circle"></i>
-                    </span>
-                    </a>
-                    {% elif request.user.groups.all.0.name == 'Director' %}
-                    <a href="{% url 'product_detail' book.books.id%}?p=book" class="btn btn-success btn-icon-split">
-                      <span class="icon text-white-50">
-                          <i class="fas fa-plus-circle"></i>
-                      </span>
-                      <span class="text">Add</span>
-                  </a>
-                {% endif %}
-
-              </td>
-                </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
+ 
   {% elif page == 'item' %}
   
 
     {% if request.user.groups.all.0.name == 'Custodian' %}
 
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
-      </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table
-            class="table table-bordered"
-            id="dataTable"
-            width="100%"
-            cellspacing="0"
-          >
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tfoot>
-              <tr>
-                <th>No</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Action</th>
-              </tr>
-            </tfoot>
-            <tbody>
-              {% for item in items %}
-              <tr>
-                <td class="align-middle text-center">{{forloop.counter}}</td>
-                <td class="align-middle text-" >{{item.items.item_name}}</td>
-                <td class="align-middle text-" >{{item.items.description}}</td>
-                <td class="align-middle text-" >{{item.quantity}}</td>
-                <td class="align-middle text-center" > 
-                  <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm item_detail"
-                    data-toggle="modal" data-target="#itemdetail" 
-                    data-itemid="{{item.id}}"
-                    data-image="{{item.items.image.url}}"
-                    data-itemname="{{item.items.item_name}}"
-                    data-itemdescription="{{item.items.description}}"
-                    data-itemquantity="{{ item.quantity }}"
-                    data-itemurl="{% url 'store_detail' item.id %}?p=item"
-                    data-itemaddurl="{% url 'product_detail' item.items.id %}?p=item">
-                    <i class="fas fa-pen fa-sm text-white-50"></i> Detail</a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table
+                class="table table-bordered"
+                id="dataTable"
+                width="100%"
+                cellspacing="0"
+              >
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                  </tr>
+                </tfoot>
+                <tbody>
+                  {% for item in items %}
+                  <tr>
+                    <td class="align-middle text-center">{{forloop.counter}}</td>
+                    <td class="align-middle text-" >{{item.items.item_name}}</td>
+                    <td class="align-middle text-" >{{item.items.description}}</td>
+                    <td class="align-middle text-" >{{item.quantity}}</td>
+                    <td class="align-middle text-center" > 
+                      <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm item_detail"
+                        data-toggle="modal" data-target="#itemdetail" 
+                        data-itemid="{{item.id}}"
+                        data-image="{{item.items.image.url}}"
+                        data-itemname="{{item.items.item_name}}"
+                        data-itemdescription="{{item.items.description}}"
+                        data-itemquantity="{{ item.quantity }}"
+                        data-itemurl="{% url 'store_detail' item.id %}?p=item"
+                        data-itemaddurl="{% url 'product_detail' item.items.id %}?p=item">
+                        <i class="fas fa-pen fa-sm text-white-50"></i> Detail</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
   
     {% elif request.user.groups.all.0.name == 'Director' %}
+        
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table
+                class="table table-bordered"
+                id="dataTable"
+                width="100%"
+                cellspacing="0"
+              >
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                  </tr>
+                </tfoot>
+                <tbody>
+                  {% for item in items %}
+                  <tr>
+                    <td class="align-middle text-center">{{forloop.counter}}</td>
+                    <td class="align-middle text-" >{{item.items.item_name}}</td>
+                    <td class="align-middle text-" >{{item.items.description}}</td>
+                    <td class="align-middle text-center" > 
+                      <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm item_detail"
+                      data-toggle="modal" data-target="#itemdetail" 
+                      data-itemid="{{item.id}}"
+                      data-image="{{item.items.image.url}}"
+                      data-itemname="{{item.items.item_name}}"
+                      data-itemdescription="{{item.items.description}}"
+                      data-itemquantity="{{ item.quantity }}"
+                      data-itemurl="{% url 'store_detail' item.id %}?p=item"
+                      data-itemaddurl="{% url 'product_detail' item.items.id %}?p=item">
+                      <i class="fas fa-pen fa-sm text-white-50"></i> Detail</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      
     {% elif request.user.groups.all.0.name == 'Manager' %}
+
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table
+                class="table table-bordered"
+                id="dataTable"
+                width="100%"
+                cellspacing="0"
+              >
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                  </tr>
+                </tfoot>
+                <tbody>
+                  {% for item in items %}
+                  <tr>
+                    <td class="align-middle text-center">{{forloop.counter}}</td>
+                    <td class="align-middle text-" >{{item.items.item_name}}</td>
+                    <td class="align-middle text-" >{{item.items.description}}</td>
+                    <td class="align-middle text-" >{{item.quantity}}</td>
+                    <td class="align-middle text-center" > 
+                      <a href="#" class="d-d d-sm-inline-block btn btn-sm btn-info shadow-sm item_detail"
+                        data-toggle="modal" data-target="#itemdetail" 
+                        data-itemid="{{item.id}}"
+                        data-image="{{item.items.image.url}}"
+                        data-itemname="{{item.items.item_name}}"
+                        data-itemdescription="{{item.items.description}}"
+                        data-itemquantity="{{ item.quantity }}"
+                        data-itemurl="{% url 'store_detail' item.id %}?p=item"
+                        data-itemaddurl="{% url 'product_detail' item.items.id %}?p=item">
+                        <i class="fas fa-pen fa-sm text-white-50"></i> Detail</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
     {% elif request.user.groups.all.0.name == 'Finance' %}
     {% endif %}
+
+
   <!-- DataTales Example -->
-  <div class="card shadow mb-4">
+  {% comment %} <div class="card shadow mb-4">
     <div class="card-header py-3">
       <h6 class="m-0 font-weight-bold text-info">List of ITEMS</h6>
     </div>
@@ -323,7 +498,7 @@
         </table>
       </div>
     </div>
-  </div>
+  </div> {% endcomment %}
 
 
   {% endif %}
@@ -454,11 +629,18 @@
                           <div class="card-body">
                             <h5 class="card-title"><i class="fas fa-book"></i> <span id="modal-bookname"></span></h5>
                               <ul class="list-group list-group-flush">
-                                  <li class="list-group-item"><i class="fas fa-bookmark"></i> <strong>Subject:</strong> <span id="modal-subject"></span></li>
-                                  <li class="list-group-item"><i class="fas fa-graduation-cap"></i> <strong>Grade:</strong> <span id="modal-grade"></span></li>
-                                  <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-description"></span></li>
-                                  <li class="list-group-item"><i class="fas fa-cubes"></i> <strong>Quantity:</strong> <span id="modal-quantity"></span></li>
-                                  <li class="list-group-item"><i class="fas fa-file-alt"></i> <strong>Pages:</strong> <span id="modal-page"></span></li>
+                                {% if request.user.groups.all.0.name == 'Director' %}
+                                    <li class="list-group-item"><i class="fas fa-bookmark"></i> <strong>Subject:</strong> <span id="modal-subject"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-graduation-cap"></i> <strong>Grade:</strong> <span id="modal-grade"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-description"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-file-alt"></i> <strong>Pages:</strong> <span id="modal-page"></span></li>
+                                {% else %}
+                                    <li class="list-group-item"><i class="fas fa-bookmark"></i> <strong>Subject:</strong> <span id="modal-subject"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-graduation-cap"></i> <strong>Grade:</strong> <span id="modal-grade"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-description"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-cubes"></i> <strong>Quantity:</strong> <span id="modal-quantity"></span></li>
+                                    <li class="list-group-item"><i class="fas fa-file-alt"></i> <strong>Pages:</strong> <span id="modal-page"></span></li>
+                                {% endif %}
                               </ul>
                           </div>
                       </div>
@@ -469,6 +651,12 @@
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               {% if request.user.groups.all.0.name == 'Custodian' %}
                   <a id="book_edit_modal_link" class="btn btn-info" href="#">Edit</a>
+                  <a href="#" id="book_add_modal_link" class="btn btn-success btn-icon-split">
+                    <span class="icon text-white">
+                        <i class="fas fa-plus-circle"></i> Add
+                    </span>
+                    </a>
+              {% elif request.user.groups.all.0.name == 'Director' %}
                   <a href="#" id="book_add_modal_link" class="btn btn-success btn-icon-split">
                     <span class="icon text-white">
                         <i class="fas fa-plus-circle"></i> Add
@@ -501,10 +689,14 @@
                     <div class="col-md-6 mt-3">
                         <div class="card-body">
                           <h5 class="card-title"><i class="fas fa-book"></i> <span id="modal-itemname"></span></h5>
-                            <ul class="list-group list-group-flush">
+                          <ul class="list-group list-group-flush">
+                            {% if request.user.groups.all.0.name == 'Director' %}
+                                <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-itemdescription"></span></li>
+                            {% else %}
                                 <li class="list-group-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="modal-itemdescription"></span></li>
                                 <li class="list-group-item"><i class="fas fa-cubes"></i> <strong>Quantity:</strong> <span id="modal-itemquantity"></span></li>
-                              </ul>
+                            {% endif %}  
+                          </ul>
                         </div>
                     </div>
                 </div>
@@ -519,7 +711,13 @@
                     <span class="icon text-white">
                         <i class="fas fa-plus-circle"></i> Add
                   </span>
-                </a>
+                  </a>
+              {% elif request.user.groups.all.0.name == 'Director' %}
+                  <a href="#" id="item_add_modal_link"  class="btn btn-info btn-icon-split">
+                    <span class="icon text-white">
+                        <i class="fas fa-plus-circle"></i> Add
+                  </span>
+                  </a>
               {% endif %}
           </div>
       </div>

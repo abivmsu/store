@@ -1,0 +1,379 @@
+{% extends 'base.html' %} 
+{% block title %}Andelus | Store{% endblock %} 
+{% block content %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  {% if form.errors %}
+  <div class="alert alert-danger mt-3">
+      <strong>Error:</strong> Please correct the following errors:
+      <ul>
+          {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                  <li>{{ error }}</li>
+              {% endfor %}
+          {% endfor %}
+      </ul>
+  </div>
+  {% endif %}
+     <!-- Page Heading -->
+  <div class="d-sm-flex align-items- justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Andelus Store የ Teachers መረካከቢያ  </h1>
+  
+    <a href="#"  data-toggle="modal" data-target="#add_new_teacher" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+          class="fas fa-plus fa-sm text-white-50"></i> Add New Teacher</a>
+  </div>
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-info">List of Teachers</h6>
+    </div>
+    <div class="container mt-3">
+     
+      <div class="row">
+          {% for teacher in teachers %}
+          <div class="col-md-4 mb-4">
+              <div class="card">
+                  <div class="card-body">
+                      <h5 class="card-title">{{ teacher.first_name }} {{ teacher.last_name }}</h5>
+                      <p class="card-text">Username: {{ teacher.username }}</p>
+                      <p class="card-text">Email: {{ teacher.email }}</p>
+                  </div>
+              </div>
+          </div>
+          {% endfor %}
+      </div>
+  </div>
+  </div>
+
+ 
+</div>
+<!-- /.container-fluid -->
+<!-- Add New Teacher Modal -->
+<div class="modal fade" id="add_new_teacher" tabindex="-1" role="dialog" aria-labelledby="add_new_teacher_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="add_new_teacher_label">Add New Teacher</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Form for adding a new teacher -->
+              <form method="post" action="{% url 'teacher_create' %}">
+                  {% csrf_token %}
+                  {{ form.as_p }}
+                  <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+ <!-- User Detail Modal -->
+ 
+<div class="modal fade" id="userDetailModal" tabindex="-1" role="dialog" aria-labelledby="userDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+              <h5 class="modal-title" id="userDetailModalLabel">User Profile - <span id="modal-username"></span></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <div class="row mb-3">
+                  <div class="col-md-6">
+                      <p><i class="fas fa-user"></i> <strong>First Name:</strong> <span id="modal-firstname"></span></p>
+                      <p><i class="fas fa-user"></i> <strong>Last Name:</strong> <span id="modal-lastname"></span></p>
+                      <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <span id="modal-email"></span></p>
+                      <p><i class="fas fa-user"></i> <strong>Status:</strong> <span id="modal-status"></span></p>
+                    </div>
+                  <div class="col-md-6">
+                      <p><i class="fas fa-user"></i> <strong>Username:</strong> <span id="modal-username-detail"></span></p>
+                      <p><i class="fas fa-users"></i> <strong>Groups/Positions:</strong> <span id="modal-groups"></span></p>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          
+            <a type="button" class="btn btn-warning deactivate-user-modal-button"
+                data-toggle="modal" data-target="#confirmDeactivateModal"
+                data-userid="{{ u.id }}" data-username="{{ u.username }}" data-status="{% if u.is_active %}active{% else %}inactive{% endif %}">
+                Deactivate User
+              </a>
+            <a type="button" class="btn btn-success activate-user-modal-button"
+                data-toggle="modal" data-target="#confirmActivateModal"
+                data-userid="{{ u.id }}" data-username="{{ u.username }}" data-status="{% if u.is_active %}active{% else %}inactive{% endif %}">
+                Activate User
+              </a>
+            <a href="#" class="btn btn-danger remove-user-modal-btn"
+                data-toggle="modal" data-target="#confirmRemoveModal"
+                data-userid="{{ u.id }}" data-username="{{ u.username }}">
+                Remove User
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<!-- Confirm Deactivate Modal -->
+<div class="modal fade" id="confirmDeactivateModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmDeactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="confirmDeactivateModalLabel">Confirm Deactivation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to deactivate the user?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="deactivateUserConfirmationBtn" data-dismiss="modal">Dectivate User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Activate Modal -->
+<div class="modal fade" id="confirmActivateModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmActivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="confirmActivateModalLabel">Confirm Activation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to activate the user?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="activateUserConfirmationBtn" data-dismiss="modal">Activate User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal for Remove User -->
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1" role="dialog" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="confirmRemoveModalLabel">Confirm Removal</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove this user?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="removeUserConfirmationBtn" data-dismiss="modal">Remove User</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+     // Function to get the CSRF cookie value
+     function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Check if this cookie string begins with the name we want
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+  $(document).ready(function() {
+    // Open user detail modal
+    $(".user-detail-button").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+      var firstname = $(this).data("firstname");
+      var groups = $(this).data("groups");
+      var status = $(this).data("status");
+
+      $("#modal-username").text(username);
+      $("#modal-firstname").text(firstname);
+      $("#modal-lastname").text("");
+      $("#modal-email").text("");
+      $("#modal-username-detail").text(username);
+      $("#modal-groups").text(groups);
+       // Set the user status badge
+      if (status === 'Active') {
+        $("#modal-status").html('<span class="badge badge-success">' + status + '</span>');
+        $(".deactivate-user-modal-button").show();
+        $(".activate-user-modal-button").hide();
+      } else {
+        $("#modal-status").html('<span class="badge badge-danger">' + status + '</span>');
+        $(".deactivate-user-modal-button").hide();
+        $(".activate-user-modal-button").show();
+      }
+
+       
+      // Set data attributes for remove button in the user detail modal
+      $(".remove-user-modal-btn").attr("data-userid", userId);
+      $(".remove-user-modal-btn").attr("data-username", username);
+      
+      
+      // Set data attributes for activate confirmation button
+      $(".activate-user-modal-button").attr("data-userid", userId);
+      $(".activate-user-modal-button").attr("data-username", username);
+    
+      // Set data attributes for deactivate confirmation button
+      $(".deactivate-user-modal-button").attr("data-userid", userId);
+      $(".deactivate-user-modal-button").attr("data-username", username);
+
+    
+    });
+
+    // Open remove confirmation modal
+    $(".remove-user-modal-btn").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+      // Set data attributes for remove confirmation button
+      $("#removeUserConfirmationBtn").attr("data-userid", userId);
+      $("#removeUserConfirmationBtn").attr("data-username", username);
+    });
+
+
+    // Open activate confirmation modal
+    $(".activate-user-modal-button").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+
+      // Set data attributes for activate confirmation button
+      $("#activateUserConfirmationBtn").attr("data-userid", userId);
+      $("#activateUserConfirmationBtn").attr("data-username", username);
+
+    });
+
+    // Open deactivate confirmation modal
+    $(".deactivate-user-modal-button").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+
+      // Set data attributes for activate confirmation button
+      $("#deactivateUserConfirmationBtn").attr("data-userid", userId);
+      $("#deactivateUserConfirmationBtn").attr("data-username", username);
+    });
+
+    
+    // Handle remove confirmation button click
+    $("#removeUserConfirmationBtn").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+
+       // Get the CSRF token
+       var csrfToken = getCookie('csrftoken');
+      // Perform AJAX request to remove user
+      $.ajax({
+        type: "POST",
+        url: "/remove_user",  // Replace with your actual URL
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        data: {
+          user_id: userId,
+        },
+        success: function(response) {
+          // Handle success, e.g., hide modal or refresh page
+          location.reload();
+          alert("User removed successfully!");
+          // Add your logic here (e.g., hide modal, refresh page)
+        },
+        error: function(error) {
+          // Handle error, e.g., display an error message
+          
+          alert("Error removing user!");
+        },
+      });
+    });
+
+
+    // Handle activate confirmation button click
+    $("#activateUserConfirmationBtn").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+        console.log(userId)
+       // Get the CSRF token
+       var csrfToken = getCookie('csrftoken');
+      // Perform AJAX request to remove user
+      $.ajax({
+        type: "POST",
+        url: "/activate_user",  // Replace with your actual URL
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        data: {
+          user_id: userId,
+        },
+        success: function(response) {
+          // Handle success, e.g., hide modal or refresh page
+          location.reload();
+          alert("User Activated successfully!");
+          // Add your logic here (e.g., hide modal, refresh page)
+        },
+        error: function(error) {
+          // Handle error, e.g., display an error message
+          
+          alert("Error activating user!");
+        },
+      });
+    });
+   
+    // Handle deactivate confirmation button click
+    $("#deactivateUserConfirmationBtn").click(function() {
+      var userId = $(this).data("userid");
+      var username = $(this).data("username");
+        console.log(userId)
+       // Get the CSRF token
+       var csrfToken = getCookie('csrftoken');
+      // Perform AJAX request to remove user
+      $.ajax({
+        type: "POST",
+        url: "/deactivate_user",  // Replace with your actual URL
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        data: {
+          user_id: userId,
+        },
+        success: function(response) {
+          // Handle success, e.g., hide modal or refresh page
+          location.reload();
+          alert("User Deactivated successfully!");
+          // Add your logic here (e.g., hide modal, refresh page)
+        },
+        error: function(error) {
+          // Handle error, e.g., display an error message
+          
+          alert("Error Deactivating user!");
+        },
+      });
+    });
+  });
+</script>
+
+ {% endblock %}

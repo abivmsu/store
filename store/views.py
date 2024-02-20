@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden,JsonResponse
 from django.urls import reverse
-from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm
+from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm, ProductGivenForm, ProductGivenDetailForm, StaffOrderForm
 from django.contrib import messages
 from .models import *
 from cart.cart import Cart
@@ -141,15 +141,34 @@ def add_item(request):
 # detail to add quantity and other like price , unit ... to the list
 def product_detail(request,product_id):
     product_type = request.GET['p']
-    if product_type == 'book':
-        page = 'book'
-        product = Book.objects.get(id = product_id)
-        form = OrderForm()
-    elif product_type == 'item':
-        page = 'item'
-        product = Item.objects.get(id = product_id)
-        form = OrderForm( )
-    context = {'product':product,'page':page, 'form':form}
+    if request.user.groups.filter(name='Custodian').exists():
+        if product_type == 'book':
+            page = 'book'
+            product = Book.objects.get(id = product_id)
+            book = Store.objects.get(books = product)
+            product_quantity =  book.quantity
+            form = OrderForm()
+        elif product_type == 'item':
+            page = 'item'
+            product = Item.objects.get(id = product_id)
+            item = Store.objects.get(items = product)
+            product_quantity =  item.quantity
+            form = OrderForm( )
+   
+    elif request.user.groups.filter(name='Director').exists():
+        if product_type == 'book':
+            page = 'book'
+            product = Book.objects.get(id = product_id)
+            book = Store.objects.get(books = product)
+            product_quantity =  book.quantity
+            form = StaffOrderForm()
+        elif product_type == 'item':
+            page = 'item'
+            product = Item.objects.get(id = product_id)
+            item = Store.objects.get(items = product)
+            product_quantity =  item.quantity
+            form = StaffOrderForm( )
+    context = {'product':product,'page':page, 'form':form,'product_quantity':product_quantity }
     return render(request, 'store/product_detail.html', context)
 
 def store_detail(request,store_id):
@@ -282,10 +301,12 @@ def finish_order(request):
                 order = Order(
                     user=userr,
                     quantity=product_data['quantity'],
+                    subunit_quantity=product_data['subunit_quantity'],
                     # price=product_data['price'],
                     # total_price=product_data['quantity'] * product_data['price'],
                     order_type='outgoing',  # Set order type as needed
                     unit=product_data['unit'],  # Assuming you want the last unit in the cart
+                    subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
                 )
                 #Assuming 'books' and 'items' are related names in the Order model
                 if product_type == 'book':
@@ -319,15 +340,18 @@ def finish_order(request):
 def orders(request):
     if request.GET['p'] == 'gebi':
         page =  request.GET['p']
-        order_group = OrderGroup.objects.filter( user = request.user, order_type= 'incoming')
+        if request.user.groups.filter(name='Custodian').exists():
+            order_group = OrderGroup.objects.filter( user = request.user, order_type= 'incoming').order_by('-date')
+        elif request.user.groups.filter(name='Manager').exists():
+            order_group = OrderGroup.objects.filter(order_type= 'incoming').order_by('-date')
     elif request.GET['p'] =='wechi':
         page =  request.GET['p']
         if request.user.groups.filter(name='Director').exists():
-            order_group = OrderGroup.objects.filter( user = request.user, order_type= 'outgoing')
+            order_group = OrderGroup.objects.filter( user = request.user, order_type= 'outgoing').order_by('-date')
         elif request.user.groups.filter(name='Custodian').exists():
-            order_group = OrderGroup.objects.filter(Q(status='Complete') | Q(status='Accepted'), order_type='outgoing')
+            order_group = OrderGroup.objects.filter(Q(status='Complete') | Q(status='Accepted'), order_type='outgoing').order_by('-date')
         else:
-            order_group = OrderGroup.objects.filter(order_type= 'outgoing')
+            order_group = OrderGroup.objects.filter(order_type= 'outgoing').order_by('-date')
     context= {'order_group': order_group, 'page':page}
     return render(request, 'order/order.html', context)
 
@@ -476,3 +500,49 @@ def product_delete(request, pk):
         product.delete()
         return redirect('product_list')  # Redirect to product list view
     return render(request, 'product_delete.html', {'product': product})
+
+
+
+def teachers_list(request):
+    teachers = User.objects.filter(groups__name='Teacher')
+    return render(request, 'merekakebiya/teachers.html', {'teachers': teachers})
+
+
+def add_product(request):
+    if request.method == 'POST':
+        product_form = ProductForm(request.POST)
+        if product_form.is_valid():
+            product = product_form.save()
+            return JsonResponse({'success': True, 'product_id': product.id})
+        else:
+            # Form is invalid, return form errors
+            errors = product_form.errors.as_json()
+            return JsonResponse({'success': False, 'errors': errors}, status=400)
+    else:
+        # Handle GET request if needed
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)        
+
+
+
+def add_product_given(request):
+    if request.method == 'POST':
+        product_given_form = ProductGivenForm(request.POST)
+        product_given_detail_formset = ProductGivenDetailForm(request.POST)
+        if product_given_form.is_valid() and product_given_detail_formset.is_valid():
+            product_given = product_given_form.save()
+            for form in product_given_detail_formset:
+                product_given_detail = form.save(commit=False)
+                product_given_detail.product_given = product_given
+                product_given_detail.save()
+            return redirect('success_url')  # Redirect to success page
+    else:
+        product_given_form = ProductGivenForm()
+        product_given_detail_formset = ProductGivenDetailForm()
+    
+
+    context = {
+        'product_given_form': product_given_form,
+        'product_given_detail_formset': product_given_detail_formset,
+    }
+
+    return render(request, 'merekakebiya/asrekeb.html', context)

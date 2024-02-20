@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Book, Item, Store, Order, ProductGiven
+from .models import Category, Book, Item, Store, Order, Product, ProductGiven, ProductGivenDetail
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -59,6 +59,47 @@ class OrderForm(forms.ModelForm):
         # Add JavaScript function to update subunit_quantity based on subunit selection
         self.fields['subunit'].widget.attrs['onchange'] = 'updateSubunitQuantity();'
 
+# class StaffOrderForm(forms.ModelForm):
+#     class Meta:
+#         model = Order
+#         fields = ['unit', 'quantity', 'subunit', 'subunit_quantity']
+#         widgets = {
+#             'unit': forms.Select(attrs={'class': 'form-control'}),
+#             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+#             'subunit': forms.Select(attrs={'class': 'form-control', 'onchange': 'updateSubunitQuantity()'}), # Add onchange event to trigger JavaScript function
+#             'subunit_quantity': forms.NumberInput(attrs={'class': 'form-control', 'readonly': True}), # Set readonly attribute initially
+#             }
+
+#     def __init__(self, *args, **kwargs):
+#         super(StaffOrderForm, self).__init__(*args, **kwargs)
+#         # Customize the form if needed
+#         self.fields['subunit'].required = False
+#         self.fields['subunit_quantity'].required = False
+
+#         # Add JavaScript function to update subunit_quantity based on subunit selection
+#         self.fields['subunit'].widget.attrs['onchange'] = 'updateSubunitQuantity();'
+
+class StaffOrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['unit', 'quantity', 'subunit', 'subunit_quantity']
+        widgets = {
+            'unit': forms.Select(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'subunit': forms.Select(attrs={'class': 'form-control', 'onchange': 'updateSubunitQuantity()'}),
+            'subunit_quantity': forms.NumberInput(attrs={'class': 'form-control', 'readonly': True}),
+        }
+        error_messages = {
+            'unit': {'required': 'Please select a unit.'},
+            'quantity': {'required': 'Please enter a quantity.', 'invalid': 'Invalid quantity.'},
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(StaffOrderForm, self).__init__(*args, **kwargs)
+        self.fields['subunit'].required = False
+        self.fields['subunit_quantity'].required = False
+        self.fields['subunit'].widget.attrs['onchange'] = 'updateSubunitQuantity();'
+
 class StoreForm(forms.ModelForm):
     class Meta:
         model = Store
@@ -69,3 +110,29 @@ class StoreForm(forms.ModelForm):
 #############################################################################
 #############################################################################
 
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name']
+
+
+class ProductGivenForm(forms.ModelForm):
+    class Meta:
+        model = ProductGiven
+        fields = ['provider', 'teacher', 'notes']
+     
+
+class ProductGivenDetailForm(forms.ModelForm):
+    class Meta:
+        model = ProductGivenDetail
+        fields = ['product', 'quantity', 'date_given', 'notes']
+        widgets = {
+            'product': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'date_given': forms.DateInput(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ProductGivenDetailForm, self).__init__(*args, **kwargs)
+        self.fields['product'].queryset = Product.objects.all()  # Queryset for the product field

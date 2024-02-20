@@ -1,0 +1,126 @@
+{% extends 'base.html' %} 
+{% block title %}Andelus | Store{% endblock %} 
+{% block content %}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  {% if form.errors %}
+  <div class="alert alert-danger mt-3">
+      <strong>Error:</strong> Please correct the following errors:
+      <ul>
+          {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                  <li>{{ error }}</li>
+              {% endfor %}
+          {% endfor %}
+      </ul>
+  </div>
+  {% endif %}
+     <!-- Page Heading -->
+  <div class="d-sm-flex align-items- justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">asrekeb </h1>
+  
+    <a href="#"  data-toggle="modal" data-target="#add_new_teacher" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+          class="fas fa-plus fa-sm text-white-50"></i> Add New Teacher</a>
+  </div>
+  <a href="#" id="add_product_modal_btn" class="btn btn-primary mb-3" data-toggle="modal" data-target="#add_product_modal">Add Product</a>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-info">-</h6>
+    </div>
+    <div class="container mt-3">
+        <div class="container mt-5">
+            <h1>Add Product Given</h1>
+            <form method="post">
+                {% csrf_token %}
+                {{ product_given_form.as_p }}
+                <div id="product-details">
+                    {{ product_given_detail_formset.management_form }}
+                    {% for form in product_given_detail_formset %}
+                        <div class="product-detail-form">
+                            {{ form.as_p }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+<!-- /.container-fluid -->
+<!-- Add New Teacher Modal -->
+<div class="modal fade" id="add_product_modal" tabindex="-1" role="dialog" aria-labelledby="add_product_modal_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="add_product_modal_label">Add Product</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Form for adding a product -->
+              <form id="add_product_form" method="post">
+                  {% csrf_token %}
+                  {{product_form.as_p}}
+                  <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+
+<script>
+     // Function to get the CSRF cookie value
+     function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Check if this cookie string begins with the name we want
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+ 
+    $('#add_product_form').submit(function(e) {
+      e.preventDefault(); // Prevent default form submission
+
+      // Serialize form data
+      var formData = $(this).serialize();
+
+      // Send AJAX request to submit form data
+      $.ajax({
+          type: 'POST', // Form submission method
+          url: '{% url "add_product" %}', // URL to submit the form data
+          data: formData, // Form data
+          success: function(response) {
+              // Check if the submission was successful
+              if (response.success) {
+                  // Hide the modal
+                  $('#add_product_modal').modal('hide');
+              } else {
+                  // Handle errors if needed
+                  console.error('Form submission failed:', response.errors);
+              }
+          },
+          error: function(xhr, status, error) {
+              // Handle AJAX errors if needed
+              console.error('AJAX error:', error);
+          }
+      });
+  });
+
+</script>
+
+ {% endblock %}

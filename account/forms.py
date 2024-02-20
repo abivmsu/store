@@ -51,3 +51,10 @@ class UserForm(forms.ModelForm):
         queryset=Group.objects.all(),
         widget=forms.CheckboxSelectMultiple,
     )
+
+
+class TeacherForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name','last_name','username', 'email']  # Customize fields as needed
+      

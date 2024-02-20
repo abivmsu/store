@@ -9,6 +9,73 @@
        <h1 class="h3 mb-0 text-gray-800">አንደሉስ Store ገቢ መጠይቅ ዝርዝር </h1>
      </div>
      {% if request.user.groups.all.0.name == 'Custodian' %}
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">Orders (ገቢ)</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr class="text-center bg-info text-white">
+                            <th>No</th>
+                            <th>Orders</th>
+                            <th>Order Date</th>
+                            <th>Order For</th>
+                            <th>Ordered By</th>
+                            <th>Received By</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr class="text-center bg-info text-white">
+                            <th>No</th>
+                            <th>Orders</th>
+                            <th>Order Date</th>
+                            <th>Order For</th>
+                            <th>Ordered By</th>
+                            <th>Received By</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% for order in order_group %}
+                        <tr>
+                            <td class="align-middle text-center">{{ forloop.counter }}</td>
+                            <td class="align-middle text-left">
+                              {% for product in order.orders.all %}
+                                  {% if product.books %}
+                                      <span class="badge text-white bg-primary">{{ forloop.counter }}</span> {{ product.books }} - {{ product.quantity }} qty (Book)<br>
+                                  {% elif product.items %}
+                                      <span class="badge text-white bg-secondary">{{ forloop.counter }}</span> {{ product.items }} (Item)<br>
+                                  {% endif %}
+                              {% endfor %}
+                          </td>
+                          
+                            <td class="align-middle text-center">{{ order.date }}</td>
+                            <td class="align-middle text-center">{{ order.order_for }}</td>
+                            <td class="align-middle text-center">{{ order.order_by }}</td>
+                            <td class="align-middle text-center">{{ order.recieved_by }}</td>
+                            <td class="align-middle text-center">{{ order.status }}</td>
+                            <td class="align-middle text-center">
+                              <a href="{% url 'order_detail' order.id %}" class="btn btn-info btn-sm btn-icon-split">
+                                  <span class="icon text-white-50">
+                                      <i class="fas fa-info-circle"></i>
+                                  </span>
+                                  <span class="text">Detail</span>
+                              </a>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </div>
+  
+     {% elif request.user.groups.all.0.name == 'Manager' %}
      <div class="card shadow mb-4">
       <div class="card-header py-3">
           <h6 class="m-0 font-weight-bold text-info">Orders (ገቢ)</h6>
@@ -73,101 +140,25 @@
               </table>
           </div>
       </div>
-  </div>
-  
+    </div>
      {% elif request.user.groups.all.0.name == 'Director' %}
      {% elif request.user.groups.all.0.name == 'Finance' %}
      {% endif %}
 
-  <!-- DataTales Example -->
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-info">Orders ( ገቢ )</h6>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table
-          class="table table-bordered"
-          id="dataTable"
-          width="100%"
-          cellspacing="0"
-        >
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Orders</th>
-              <th>Order Date</th>
-              <th>Order For</th>
-              <th>Ordered By</th>
-              <th>Recieved By</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tfoot>
-            <tr>
-              <th>No</th>
-              <th>Orders</th>
-              <th>Order Date</th>
-              <th>Order For</th>
-              <th>Ordered By</th>
-              <th>Recieved By</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </tfoot>
-          <tbody>
-            {% for order in order_group %}
-            <tr>
-              {% comment %} <td class="align-middle text-center"><img src={{book.books.image.url}} width="200px"></td> {% endcomment %}
-              {% comment %} <td class="align-middle text-center">{{book.books.book_name}}</td> {% endcomment %}
-              <td class="align-middle text-center">
-                {{forloop.counter}}
-                </td>
-              <td class="align-left text-left">
-                {%for product in order.orders.all%}
-                  {% if product.books %}
-                    {{forloop.counter}}, {{product.books}} - {{product.quantity}} qty (Book)
-                  {%elif product.items %} 
-                    {{forloop.counter}},{{product.items}}  (Item)
-                  {%endif%}
-                <br>
-            
-              {%endfor%}</td>
-              <td class="align-middle text-center">{{order.date}}</td>
-              <td class="align-middle text-center">{{order.order_for}}</td>
-              <td class="align-middle text-center">{{order.order_by}}</td>
-              <td class="align-middle text-center">{{order.recieved_by}}</td>
-              <td class="align-middle text-center">{{order.status}}</td>
-              <td class="align-middle text-center">
-            <a href="{% url 'order_detail' order.id%}" class="btn btn-info btn-icon-split">
-              <span class="icon text-white-50">
-                  <i class="fas fa-info-circle"></i>
-              </span>
-              <span class="text">Detail</span>
-          </a>
-          </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 
   {% elif page == 'wechi' %}
 
   <!-- Page Heading -->
-  <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">አንደሉስ Store ወጪ መጠይቅ ዝርዝር </h1>
-   {% if page == 'book' %}
-   <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-    class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
-    {% elif page == 'item' %}
-  <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
-          class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
-  {% endif %}
-</div>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">አንደሉስ Store ወጪ መጠይቅ ዝርዝር </h1>
+      {% if page == 'book' %}
+          <a href="#"  data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+          class="fas fa-plus fa-sm text-white-50"></i> Add New Book</a>
+      {% elif page == 'item' %}
+          <a href="#"  data-toggle="modal" data-target="#add_new_item" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i
+                  class="fas fa-plus fa-sm text-white-50"></i> Add New Item</a>
+      {% endif %}
+  </div>
 
   <!-- DataTales Example -->
   <div class="card shadow mb-4">
@@ -207,9 +198,6 @@
             </tr>
           </tfoot>
           <tbody>
-            {% if order_group.status == Accepted or order_group.status == Complete %}
-            we
-            {% endif %}
             {% for order in order_group %}
             <tr>
               {% comment %} <td class="align-middle text-center"><img src={{book.books.image.url}} width="200px"></td> {% endcomment %}
@@ -267,106 +255,7 @@
       </div>
     </div>
   </div>
-
-
   {% endif %}
-
 </div>
 <!-- /.container-fluid -->
-
-
-
-
-    <!-- add book Modal form-->
-    <div class="modal fade" id="add_new_book" tabindex="-1" role="dialog" aria-labelledby="add_newb"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="add_newb">Add new Book </h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Fill the following form to add Book.</div>
-                <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-
-                  {{ book_form.as_p }}
-                  
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" type="submit" >Add</button>
-                </div>
-              </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- add item Modal form-->
-    <div class="modal fade" id="add_new_item" tabindex="-1" role="dialog" aria-labelledby="add_newi"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="add_newi">Add new item </h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Fill the following form to add Book.</div>
-                <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-
-                  {{ item_form.as_p }}
-                  
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" type="submit" >Add</button>
-                </div>
-              </form>
-            </div>
-        </div>
-    </div>
-
-
 {% endblock %}
- 
-{% for product in order.orders.all %}
-<div class="card mb-3" style="max-width: 100%;">
-  <div class="row no-gutters">
-    <div class="col-md-4">
-      {% if product.is_book %}
-      <img src="{{product.books.image.url}}" class="card-img" alt="...">
-      {% elif product.is_item %}
-      <img src="{{product.items.image.url}}" class="card-img" alt="...">
-      {% endif %}
-    </div>
-    <div class="col-md-8">
-      <div class="card-body">
-        <h5 class="card-title text-start text-md-center">
-          {% if product.is_book %}
-          {{product.books.book_name}}</h5>
-          {% elif product.is_item %}
-          {{product.items.item_name}}</h5>
-          {%endif%}
-         <!-- unit -->
-         <p class="text-start text-md-center">
-          Quantity: <strong>{{product.quantity}}  </strong>
-        </p>
-         <p class="text-start text-md-center">
-          Unit: <strong>{{product.unit}}  </strong>
-        </p>
-        <!-- Price -->
-        <!-- Price -->
-        <p class="text-start text-md-center">
-           Unit Price: <strong>{{product.price}}  </strong>ብር
-          <p class="text-start text-md-center">
-            Total Price: <strong>{{ product.total_price }} ብር</strong>
-          </p>
-        </p> <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-      </div>
-    </div>
-  </div>
-</div>
-{%endfor%}

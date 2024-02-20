@@ -2,157 +2,283 @@
 {% block title %}Andelus | Order detail{% endblock %} 
 {% block content %}
 
-{% if request.user.groups.all.0.name == 'Custodian' %}
-    <!-- Begin Page Content -->
+<!-- Begin Page Content -->
 <div class="container-fluid">
-    <!-- Page Heading -->
+<!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Andelus Store Order Detail</h1>
         <a href="#" data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i class="fas fa-arrow fa-sm text-white-50"></i> Download report</a>
     </div>
-    <!-- Products -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <div class="col-md-12">
-                <div class="d-flex justify-content-between">
-                    <div class="order-detail">
+    {% if request.user.groups.all.0.name == 'Custodian' %}
+        <!-- Products -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div class="order-detail">
 
-                        <span class="ml-2"><strong>Status:</strong>
-                            {% if order.status == 'Pending' %}
-                            <span class="badge badge-info badge-lg">{{ order.status }}</span>
-                            {% elif order.status == 'Accepted' %}
-                            <span class="badge badge-warning badge-lg">{{ order.status }}</span>
-                            {% elif order.status == 'Complete' %}
-                            <span class="badge badge-success badge-lg">{{ order.status }}</span>
-                            {% endif %}
-                        </span>
-                    </div>
-                    <div class="order-detail">
-                        <i class="fas fa-tags"></i>
-                        <span class="ml-2"><strong>Order Type:</strong> {{ order.order_type }}</span>
-                    </div>
-                    <div class="order-detail">
-                        <i class="fas fa-user"></i>
-                        <span class="ml-2"><strong>Requested By:</strong> {{ order.order_by }}</span>
+                            <span class="ml-2"><strong>Status:</strong>
+                                {% if order.status == 'Pending' %}
+                                <span class="badge badge-info badge-lg">{{ order.status }}</span>
+                                {% elif order.status == 'Accepted' %}
+                                <span class="badge badge-warning badge-lg">{{ order.status }}</span>
+                                {% elif order.status == 'Complete' %}
+                                <span class="badge badge-success badge-lg">{{ order.status }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="order-detail">
+                            <i class="fas fa-tags"></i>
+                            <span class="ml-2"><strong>Order Type:</strong> {{ order.order_type }}</span>
+                        </div>
+                        <div class="order-detail">
+                            <i class="fas fa-user"></i>
+                            <span class="ml-2"><strong>Requested By:</strong> {{ order.order_by }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <div class="row">
-                    {% for product in order.orders.all %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card">
-                                <div class="card-header bg-info text-white">
-                                    <h5 class="card-title mb-0">
-                                        {% if product.is_book %}
-                                            Book: {{ product.books.book_name }}
-                                        {% elif product.is_item %}
-                                            Item: {{ product.items.item_name }}
-                                        {% endif %}
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <div class="col-2">
-                                                            <i class="fas fa-shopping-cart"></i>
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        {% for product in order.orders.all %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="card-title mb-0">
+                                            {% if product.is_book %}
+                                                Book: {{ product.books.book_name }}
+                                            {% elif product.is_item %}
+                                                Item: {{ product.items.item_name }}
+                                            {% endif %}
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-shopping-cart"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-10">
-                                                            <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-ruler"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <hr>
-                                                    <div class="row">
-                                                        <div class="col-2">
-                                                            <i class="fas fa-ruler"></i>
-                                                        </div>
-                                                        <div class="col-10">
-                                                            <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
-                                                        </div>
-                                                    </div>
                                                     {% if product.subunit %}
-                                                    <hr>
-                                                    <div class="row">
-                                                        <div class="col-2">
-                                                            <i class="fas fa-cubes"></i>
-                                                        </div>
-                                                        <div class="col-10">
-                                                            <p class="card-text"><strong>Subunit:</strong> {{ product.subunit }}</p>
-                                                        </div>
-                                                    </div>
-                                                    <hr>
-                                                    <div class="row">
-                                                        <div class="col-2">
-                                                            <i class="fas fa-layer-group"></i>
-                                                        </div>
-                                                        <div class="col-10">
-                                                            <p class="card-text"><strong>Subunit Quantity:</strong> {{ product.subunit_quantity }}</p>
-                                                        </div>
-                                                    </div>
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-cubes"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Subunit:</strong> {{ product.subunit }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-layer-group"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Subunit Quantity:</strong> {{ product.subunit_quantity }}</p>
+                                                                </div>
+                                                            </div>
                                                     {% endif %}
-                                                    <!-- Added issued quantity input field and confirmed quantity inside a conditional statement -->
+                                                        <!-- Added issued quantity input field and confirmed quantity inside a conditional statement -->
                                                     {% if product.order_type == 'outgoing' %}
-
-                                                    <!-- Added confirmed quantity -->
-                                                    <hr>
-                                                    <div class="row">
-                                                        <div class="col-2">
-                                                            <i class="fas fa-check"></i>
+                                                        <!-- Added confirmed quantity -->
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-check"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <p class="card-text"><strong>Confirmed Quantity:</strong> {{ product.confirmed_quantity }}</p>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-10">
-                                                            <p class="card-text"><strong>Confirmed Quantity:</strong> {{ product.confirmed_quantity }}</p>
+                                                        <!-- Added issued quantity input field -->
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-boxes"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <label for="issuedQuantity">Issued Quantity:</label>
+                                                                <input type="number" id="issuedQuantity{{ product.id }}" class="form-control issued-quantity-input" data-product-id="{{ product.id }}" name="confirmed_quantity" value="{{ product.issued_quantity }}" data-confirmed-quantity="{{ product.confirmed_quantity }}" >
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <!-- Added issued quantity input field -->
-                                                    <hr>
-                                                    <div class="row">
-                                                        <div class="col-2">
-                                                            <i class="fas fa-boxes"></i>
-                                                        </div>
-                                                        <div class="col-10">
-                                                            <label for="issuedQuantity">Issued Quantity:</label>
-                                                            <input type="number" id="issuedQuantity{{ product.id }}" class="form-control issued-quantity-input" data-product-id="{{ product.id }}" name="confirmed_quantity" value="{{ product.issued_quantity }}" data-confirmed-quantity="{{ product.confirmed_quantity }}" >
-                                                          </div>
-                                                    </div>
                                                     {% endif %}
 
+                                                    </div>
                                                 </div>
                                             </div>
+                                            
                                         </div>
-                                        
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    {% if order.order_type == 'outgoing' and order.status != 'Complete' %}
+                        <button type="button" class="btn btn-info" onclick="issueAllQuantities()"> <i class="fas fa-check"></i> Complete Order</button>
+                    {% elif order.order_type == 'outgoing' and order.status == 'Complete' %}
+                        <button type="button" class="btn btn-info" onclick="issueAllQuantities()"> <i class="fas fa-check"></i> Update Order</button>       
+                    {% endif %}
                 </div>
             </div>
-            <div class="card-footer text-center">
-                <button type="button" class="btn btn-info" onclick="issueAllQuantities()"> <i class="fas fa-check"></i> Complete Order</button>
-            </div>
         </div>
-    </div>
-    <!-- Include the JavaScript function to collect quantities and send them to the server -->
 
-{% elif request.user.groups.all.0.name == 'Director' %}
-       
-<!-- Begin Page Content -->
-       <div class="container-fluid">
-        <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Andelus Store Order Detail</h1>
-            <a href="#" data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i class="fas fa-arrow fa-sm text-white-50"></i> Download report</a>
+    {% elif request.user.groups.all.0.name == 'Director' %}
+          <!-- Products -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div class="order-detail">
+
+                            <span class="ml-2"><strong>Status:</strong>
+                                {% if order.status == 'Pending' %}
+                                <span class="badge badge-info badge-lg">{{ order.status }}</span>
+                                {% elif order.status == 'Accepted' %}
+                                <span class="badge badge-warning badge-lg">{{ order.status }}</span>
+                                {% elif order.status == 'Complete' %}
+                                <span class="badge badge-success badge-lg">{{ order.status }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="order-detail">
+                            <i class="fas fa-tags"></i>
+                            <span class="ml-2"><strong>Order Type:</strong> {{ order.order_type }}</span>
+                        </div>
+                        <div class="order-detail">
+                            <i class="fas fa-user"></i>
+                            <span class="ml-2"><strong>Requested By:</strong> {{ order.order_by }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            {% for product in order.orders.all %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card">
+                                        <div class="card-header bg-info text-white">
+                                            <h5 class="card-title mb-0">
+                                                {% if product.is_book %}
+                                                    Book: {{ product.books.book_name }}
+                                                {% elif product.is_item %}
+                                                    Item: {{ product.items.item_name }}
+                                                {% endif %}
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-shopping-cart"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-ruler"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
+                                                                </div>
+                                                            </div>
+                                                        {% if product.subunit %}
+                                                                <hr>
+                                                                <div class="row">
+                                                                    <div class="col-2">
+                                                                        <i class="fas fa-cubes"></i>
+                                                                    </div>
+                                                                    <div class="col-10">
+                                                                        <p class="card-text"><strong>Subunit:</strong> {{ product.subunit }}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <hr>
+                                                                <div class="row">
+                                                                    <div class="col-2">
+                                                                        <i class="fas fa-layer-group"></i>
+                                                                    </div>
+                                                                    <div class="col-10">
+                                                                        <p class="card-text"><strong>Subunit Quantity:</strong> {{ product.subunit_quantity }}</p>
+                                                                    </div>
+                                                                </div>
+                                                        {% endif %}
+                                                            <!-- Added confirmed quantity -->
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-check"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Confirmed Quantity:</strong> {{ product.confirmed_quantity }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Added issued quantity input field -->
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-boxes"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Issued Quantity:</strong> {{ product.issued_quantity }}</p>
+                                                                    </div>
+                                                            </div>
+                                                            {% if order.status == 'Pending'  %}
+                                                                <hr>
+                                                                <div class="col-md-12 text-center">
+                                                                    <button type="button" class="btn btn-danger btn-sm mt-2" data-toggle="modal" data-target="#removeOrderModal" data-product-id="{{ product.id }}"><i class="fas fa-trash"></i> Cancel My Order</button>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        {% if order.order_type == 'outgoing' and order.status == 'Complete' %}
+                            <button type="button" class="btn btn-info" onclick="issueAllQuantities()"> <i class="fas fa-download"></i> Download report</button> 
+                        {% endif %}
+                    </div>
+                </div>
         </div>
-        <!-- Products -->
+    <!-- Products -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <div class="col-md-12">
@@ -217,20 +343,148 @@
             </div>
             
         </div>
-    </div>
-        <!-- Include the JavaScript function to collect quantities and send them to the server -->
-    
+   
 
-{% elif request.user.groups.all.0.name == 'Manager' %}
+    {% elif request.user.groups.all.0.name == 'Manager' %}
+         <!-- Products -->
+         <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div class="order-detail">
 
+                            <span class="ml-2"><strong>Status:</strong>
+                                {% if order.status == 'Pending' %}
+                                <span class="badge badge-info badge-lg">{{ order.status }}</span>
+                                {% elif order.status == 'Accepted' %}
+                                <span class="badge badge-warning badge-lg">{{ order.status }}</span>
+                                {% elif order.status == 'Complete' %}
+                                <span class="badge badge-success badge-lg">{{ order.status }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="order-detail">
+                            <i class="fas fa-tags"></i>
+                            <span class="ml-2"><strong>Order Type:</strong> {{ order.order_type }}</span>
+                        </div>
+                        <div class="order-detail">
+                            <i class="fas fa-user"></i>
+                            <span class="ml-2"><strong>Requested By:</strong> {{ order.order_by }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-   <!-- Begin Page Content -->
-   <div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Andelus Store Order Detail</h1>
-        <a href="#" data-toggle="modal" data-target="#add_new_book" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i class="fas fa-arrow fa-sm text-white-50"></i> Download report</a>
-    </div>
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        {% for product in order.orders.all %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="card-title mb-0">
+                                            {% if product.is_book %}
+                                                Book: {{ product.books.book_name }}
+                                            {% elif product.is_item %}
+                                                Item: {{ product.items.item_name }}
+                                            {% endif %}
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-shopping-cart"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+                                                            </div>
+                                                        </div>
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-ruler"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
+                                                            </div>
+                                                        </div>
+                                                    {% if product.subunit %}
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-cubes"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Subunit:</strong> {{ product.subunit }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="row">
+                                                                <div class="col-2">
+                                                                    <i class="fas fa-layer-group"></i>
+                                                                </div>
+                                                                <div class="col-10">
+                                                                    <p class="card-text"><strong>Subunit Quantity:</strong> {{ product.subunit_quantity }}</p>
+                                                                </div>
+                                                            </div>
+                                                    {% endif %}
+                                                        <!-- Added issued quantity input field and confirmed quantity inside a conditional statement -->
+                                                    {% if product.order_type == 'outgoing' %}
+                                                        <!-- Added issued quantity input field -->
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-2">
+                                                                <i class="fas fa-boxes"></i>
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <p class="card-text"><strong>Quantity Issue:</strong> {{ product.issued_quantity }}</p>
+                                                            </div>
+                                                        </div>
+                                                         <!-- Added confirmed quantity -->
+                                                         <hr>
+                                                         <div class="row">
+                                                             <div class="col-2">
+                                                                 <i class="fas fa-check"></i>
+                                                             </div>
+                                                             <div class="col-10">
+                                                                <label for="confirmedQuantity{{ product.id }}" class="form-label">Quantity Conf:</label>
+                                                                <input type="number" class=" text-center form-control mb-2 confirmed-quantity-input" id="confirmedQuantity{{ product.id }}" data-product-id="{{ product.id }}" name="confirmed_quantity" {% if order.status == 'Pending'%}value="{{product.quantity}}"{% else %}value="{{product.confirmed_quantity}}"{%endif%}>
+                                                                 </div>
+                                                         </div>
+                                                    {% endif %}
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    {% if order.order_type == 'outgoing'%}
+                        {% if order.status == 'Complete' or order.status == 'Accepted'  %}
+                            <button type="button" class="btn btn-info" onclick="confirmAllQuantities()"><i class="fas fa-check"></i> Update Confirmed Quanitty</button>      
+                    
+                        {% elif order.order_type == 'outgoing' and order.status != 'Complete' %}
+                             <button type="button" class="btn btn-info" onclick="confirmAllQuantities()"><i class="fas fa-check"></i> Confirm Quantities</button>   
+                        {% endif %}
+                  
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+{% comment %} 
     <!-- Products -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -278,7 +532,7 @@
                                 <p class="card-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
                                 <p class="card-text"><strong>Unit:</strong> {{ product.unit }}</p>
                                 <p class="card-text"><strong>Confirmed Quantity:</strong> {{ product.confirmed_quantity }}</p>
-                                <p class="card-text"><strong>Confirmed Unit:</strong> {{ product.confirmed_unit }}</p>
+                                <p class="card-text"><strong>Confirmed Undddit:</strong> {{ product.confirmed_unit }}</p>
                             </div>
                             <div class="confirm-section">
                                 <label for="confirmedQuantity{{ product.id }}" class="form-label">Confirm Quantity:</label>
@@ -297,11 +551,9 @@
     <div class="text-center">
         <button type="button" class="btn btn-info" onclick="confirmAllQuantities()">Confirm Quantities</button>
     </div>
-    </div>
-    <!-- Include the JavaScript function to collect quantities and send them to the server -->
-
-
-{% endif %}
+         {% endcomment %}
+        {% endif %}
+</div>
 
 
 
@@ -355,10 +607,9 @@
                 console.log(response);
                 location.reload(true);
 
-    
                 // Reload only the content within the container with ID "order-details-container"
                 $("#order-details-container").load(window.location.href + " #order-details-container");
-    
+                    window.location.href = "{% url 'orders' %}?p=wechi";
                 // Handle any additional actions after reloading
                 // ...
     
@@ -420,7 +671,6 @@
                 // Reload only the content within the container with ID "order-details-container"
                 $("#order-details-container").load(window.location.href + " #order-details-container");
                     window.location.href = "{% url 'orders' %}?p=wechi";
-                // Handle any additional actions after reloading
                 // ...
     
             },

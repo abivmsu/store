@@ -9,8 +9,6 @@ class Cart():
         # If the user is new, no session key!  Create one!
         if 'session_key' not in request.session:
           cart = self.session['session_key'] = {}
-
-
         # Make sure cart is available on all pages of site
         self.cart = cart
     def add (self, product, quantity, unit, price, product_type, sub_unit,tax,subunit_quantity):
@@ -75,6 +73,16 @@ class Cart():
             product.subunit_quantity = self.cart[cart_key]['subunit_quantity']
             product.tax = self.cart[cart_key]['tax']
             product.p_type = product_type
+
+              # Get the store quantity for the product
+            if product_type == 'book':
+                store_product = Store.objects.get(books=product)
+            elif product_type == 'item':
+                store_product = Store.objects.get(items=product)
+            store_quantity = store_product.quantity
+
+            # Add store quantity to the product
+            product.store_quantity = store_quantity
             
             product.total = product.quantity * product.price 
             product.price_tax = product.total * (float(product.tax)/100)
@@ -108,12 +116,29 @@ class Cart():
             total = product_data['quantity'] * product_data['price'] 
             tax_price = total * (float( product_data['tax'])/100)
             total_price = total + tax_price
-            print( total_price)
         # Calculate overall total
         #overall_total = sum(product_data['quantity'] * product_data['price'] for product_data in self.cart.values())
         overall_total = sum(total_price for product_data in self.cart.values())
 
         return overall_total
+    
+    def total_quantity(self):
+        total_quanitity = 0
+        for product_key, product_data in self.cart.items():
+            product_id, product_type = product_key.split('_')
+
+            if product_type == 'book':
+                product = Book.objects.get(id=product_id)
+            elif product_type == 'item':
+                product = Item.objects.get(id=product_id)
+            else:
+                # Handle other product types or raise an error
+                continue
+
+            # Calculate total price for each product
+            product.quantity = product_data['quantity']
+            total_quanitity += product.quantity 
+        return total_quanitity
 
     def update(self, product, quantity,price):
         product_id, product_type = product.split('_')
