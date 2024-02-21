@@ -85,7 +85,7 @@ class OrderGroup(models.Model):
     order_for = models.CharField(max_length=50, blank= True)
     order_by = models.CharField(max_length=50, blank= True)
     recieved_by = models.CharField(max_length=50, blank= True)
-    approved_by = models.CharField(max_length=50, blank= True)
+    approved_by = models.CharField(max_length=50, default= "-")
     status = models.CharField(max_length=10, choices=STATUS)
     date = models.DateField(default = datetime.datetime.today)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

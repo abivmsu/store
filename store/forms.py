@@ -23,6 +23,7 @@ class BookForm(forms.ModelForm):
     pages = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control'}))
     subject = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     image = forms.ImageField(widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'}))
+
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
@@ -104,7 +105,11 @@ class StoreForm(forms.ModelForm):
     class Meta:
         model = Store
         fields = ['quantity']
+        widgets = {
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'})
+            }
 
+            
 #############################################################################
 #############################################################################
 #############################################################################

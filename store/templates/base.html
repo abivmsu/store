@@ -19,6 +19,11 @@
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
+    
+    <!-- CSS alertify-->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
+
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
     <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
     <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
@@ -52,6 +57,32 @@
         border-top: 1px solid #dee2e6;
         background-color: #f8f9fa;
     }
+
+    .product-item {
+        margin-bottom: 5px; /* Add margin between each product item */
+        padding: 5px; /* Add padding to each product item */
+        border-radius: 5px; /* Add border radius to round corners */
+        background-color: #f8f9fa; /* Set background color */
+        border: 1px solid #ced4da; /* Add border */
+    }
+    
+    /* Styling for the badge */
+    .badge {
+        margin-right: 5px;
+        font-size: 0.8em;
+        padding: 0.2em 0.5em;
+        border-radius: 3px;
+    }
+
+    /* Styling for the book badge */
+    .badge-book {
+        background-color: #007bff;
+    }
+
+    /* Styling for the item badge */
+    .badge-item {
+        background-color: #28a745;
+    }
 </style>
 
 </head>
@@ -73,13 +104,13 @@
                    {% include "navbar.html" %}
                 <!-- End of Topbar -->
 
-                {% if messages %}
+                {% comment %} {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
                     {{ message }}
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button> </div>
                 {% endfor %}
-            {% endif %} 
+            {% endif %}  {% endcomment %}
                 <!-- Begin Page Content -->
                 {%block content%}
                 
@@ -118,15 +149,15 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to lgout?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body">If so, Clcik Logout Button</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="{% url 'log_out' %}">Logout</a>
+                    <a class="btn btn-info" href="{% url 'log_out' %}">Logout</a>
                 </div>
             </div>
         </div>
@@ -143,10 +174,10 @@
                 </button>
             </div>
             <div class="modal-body text-center">
-                <p class="h5"><i class="fas fa-exclamation-triangle text-warning"></i> በቅርቡ ይጠብቁን! This feature is coming soon!  </p>
+                <p class="h5"><i class="fas fa-exclamation-triangle text-warning"></i> ይቅርታ በቅርቡ ይጠብቁን! </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
             </div>   
         </div>
     </div>
@@ -175,8 +206,15 @@
  
      <!-- Page level custom scripts -->
      <script src="{% static 'js/demo/datatables-demo.js '%}"></script>
- 
 
+    {% comment %} Alertfify flashs messages {% endcomment %}
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+    <script>
+        alertify.set('notifier','position', 'top-right');
+        {%for msg in messages %}
+        alertify.success('{{msg}}');
+         {% endfor %}
+    </script>
 </body>
 
 </html>

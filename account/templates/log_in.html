@@ -15,6 +15,9 @@
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
+<!-- CSS alertify-->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
 
     <!-- Custom styles for this template-->
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
@@ -34,21 +37,23 @@
                     <div class="card-body p-0">
                         <!-- Nested Row within Card Body -->
                         <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block "></div>
+                            <div class="col-lg-6 d-flex justify-content-center align-items-center">
+                                <img src="{% static 'img/login.png' %}" alt="Andelus logo" class="img-fluid">
+                            </div>
                             <div class="col-lg-6">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Andelus Store</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">ANDELUS</h1>
                                     </div>
                                     <form method="post" enctype="multipart/form-data" class = "user">
                                       {% csrf_token %}
-                                        <div class="form-group">
-                                            <input type="text" name= "user_name" class="form-control form-control-user"
+                                        <div class="form-group ">
+                                            <input type="text" name= "user_name" class=" text-center form-control form-control-user"
                                                 id="exampleInputEmail" aria-describedby="emailHelp"
                                                 placeholder="Enter username">
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" name="password" class="form-control form-control-user"
+                                            <input type="password" name="password" class="text-center form-control form-control-user"
                                                 id="exampleInputPassword" placeholder="Password">
                                         </div>
                                         {% comment %} <div class="form-group">
@@ -58,14 +63,14 @@
                                                     Me</label>
                                             </div>
                                         </div> {% endcomment %}
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                        <button type="submit" class="btn btn-info btn-user btn-block">
                                             Login
                                         </button>
                                         <hr>
                                       
                                     </form>
                                     <div class="text-center">
-                                      <a class="small" href="forgot-password.html">Forgot Password?</a>
+                                      <a class="small" data-toggle="modal" data-target="#comingSoonModal" href="#" >Forgot Password?</a>
                                     </div>
                                     <hr>
                                    
@@ -81,16 +86,44 @@
 
     </div>
 
+<!-- Modal -->
+<div class="modal fade" id="comingSoonModal" tabindex="1" role="dialog" aria-labelledby="comingSoonModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="comingSoonModalLabel">Coming Soon</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="h5"><i class="fas fa-exclamation-triangle text-warning"></i> ይቅርታ በቅርቡ ይጠብቁን!  የቴክኒክ ችግር ነው።</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
+            </div>   
+        </div>
+    </div>
+</div>
+
+
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
-
+    <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+{% comment %} Alertfify flashs messages {% endcomment %}
+<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+<script>
+    alertify.set('notifier','position', 'top-right');
+    {%for msg in messages %}
+    alertify.success('{{msg}}');
+     {% endfor %}
+</script>
 </body>
 
 </html>

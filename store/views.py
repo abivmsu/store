@@ -61,26 +61,53 @@ def create_item(request):
 
 def index(request):
    # Calculate the total orders, total items, total books, and other data
-    total_orders = Order.objects.count()
+    total_orders = OrderGroup.objects.count()
     total_items = Item.objects.count()
     total_books = Book.objects.count()
 
-    # You can add more calculations based on your needs
-
-    # Get a list of books, items, and orders to pass to the template
-    books = Book.objects.all()
-    items = Item.objects.all()
-    orders = Order.objects.all()
-
-    # Prepare the context dictionary with the calculated values and data
-    context = {
+    if request.user.groups.filter(name='Director').exists():
+        pending_orders_count = OrderGroup.objects.filter(status='Pending', user= request.user).count()
+        accepted_orders_count = OrderGroup.objects.filter(status='Accepted', user= request.user).count()
+        completed_orders_count = OrderGroup.objects.filter(status='Complete', user= request.user).count()
+        
+        total_orders = OrderGroup.objects.filter(user= request.user).count()
+        total_items = Order.objects.filter(user= request.user, is_item = True).count()
+        total_books = Order.objects.filter(user= request.user, is_book = True).count()
+        outgoing_orders = OrderGroup.objects.filter(user= request.user,order_type='outgoing').order_by('-date')[:5]
+        context = {
+        'pending_orders_count': pending_orders_count,
+        'accepted_orders_count': accepted_orders_count,
+        'completed_orders_count': completed_orders_count, 
         'total_orders': total_orders,
         'total_items': total_items,
         'total_books': total_books,
-        'books': books,
-        'items': items,
-        'orders': orders,
+        'outgoing_orders': outgoing_orders,
     }
+
+    else:
+        orders = Order.objects.all()
+        incoming_orders = OrderGroup.objects.filter(order_type='incoming').order_by('-date')[:5]
+        outgoing_orders = OrderGroup.objects.filter(order_type='outgoing').order_by('-date')[:5]
+        pending_orders_count = OrderGroup.objects.filter(status='Pending').count()
+        accepted_orders_count = OrderGroup.objects.filter(status='Accepted').count()
+        completed_orders_count = OrderGroup.objects.filter(status='Complete').count()
+        books = Store.objects.filter(is_book=True)[:5]
+        items = Store.objects.filter(is_item=True)[:5]
+  
+    # Prepare the context dictionary with the calculated values and data
+        context = {
+            'total_orders': total_orders,
+            'total_items': total_items,
+            'total_books': total_books,
+            'books': books,
+            'items': items,
+            'orders': orders,  
+            'incoming_orders': incoming_orders,
+            'outgoing_orders': outgoing_orders,
+            'pending_orders_count': pending_orders_count,
+            'accepted_orders_count': accepted_orders_count,
+            'completed_orders_count': completed_orders_count,
+        }
 
     # Render the template with the context
     return render(request, 'index.html', context)
@@ -179,10 +206,9 @@ def store_detail(request,store_id):
     item_form = ItemForm(instance= product.items)
     if product_type == 'book':
         if product.books:
-            item_form = ItemForm(instance= product.items)
             if request.method == 'POST':
                 store_form = StoreForm(request.POST,instance= product)
-                book_form = BookForm(request.POST,instance= product.books)
+                book_form = BookForm(request.POST, request.FILES , instance= product.books)
                 if store_form.is_valid() and book_form.is_valid():
                     store_form.save()
                     book_form.save()
@@ -192,7 +218,7 @@ def store_detail(request,store_id):
         if product.items:
             if request.method == 'POST':
                 store_form = StoreForm(request.POST,instance= product)
-                item_form = ItemForm(request.POST,instance= product.items)
+                item_form = ItemForm(request.POST, request.FILES ,instance= product.items)
                 if store_form.is_valid() and item_form.is_valid():
                     store_form.save()
                     item_form.save()
@@ -386,6 +412,7 @@ def confirm_all_quantities(request):
         except (ValueError, TypeError, Order.DoesNotExist):
             return JsonResponse({'error': 'Invalid product data'}, status=400)
     ordergroup.status='Accepted'
+    ordergroup.approved_by = request.user.first_name
     ordergroup.save()
     return JsonResponse({'success': 'Confirmed quantities updated successfully'})
 
