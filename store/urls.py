@@ -3,9 +3,7 @@ from . import views
 
 urlpatterns = [
    path('index', views.index, name='index'),
-    path('create/book/', views.create_book, name='create_book'),
-    path('create/item/', views.create_item, name='create_item'),
-
+   
   # Store
     path('book/', views.book_store, name='book_store'),
     path('item/', views.item_store, name='item_store'),
@@ -42,6 +40,16 @@ urlpatterns = [
 
     path('teachers_list', views.teachers_list, name='teachers_list'),
     path('asrekeb', views.add_product_given, name='asrekeb'),
+
+
+
+    path('items_report/', views.items_report, name='items_report'),
+    path('books_report/', views.books_report, name='books_report'),
+
+    path('wechi_report/<int:order_id>/', views.wechi_report, name='wechi_report'),
+    path('gebi_report/<int:order_id>/', views.gebi_report, name='gebi_report'),
+
+ path('generate_pdf_report/', views.generate_pdf_report, name='generate_pdf_report'),
 
 ]
 

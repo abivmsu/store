@@ -54,6 +54,7 @@ class Order(models.Model):
     quantity = models.IntegerField(default=0)
     confirmed_quantity = models.IntegerField(default=0)
     issued_quantity = models.IntegerField(default=0)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2,default=0.00 )
     price = models.DecimalField(max_digits=10, decimal_places=2,default=0.00 )
     tax = models.IntegerField(default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

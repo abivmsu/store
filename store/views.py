@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden,JsonResponse
+from django.http import HttpResponseForbidden,JsonResponse , HttpResponse, HttpResponseBadRequest
 from django.urls import reverse
 from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm, ProductGivenForm, ProductGivenDetailForm, StaffOrderForm
 from django.contrib import messages
@@ -9,83 +9,717 @@ from django.db import transaction
 from django.db.models import Q , F
 import datetime , json
 from django.views.decorators.http import require_POST
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 # Create your views here.
 
+    
 
-# def index(request):
-#     if request.method == 'POST':
-#         form = StoreForm(request.POST)
-#         if form.is_valid():
-#             store_instance = form.save()
-#             # Optionally, you can perform additional actions here.
-#             return redirect('index')  # Replace 'success_page' with your success page URL.
-#     else:
-#         form = StoreForm()
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from datetime import datetime
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
 
-#     return render(request, 'index.html', {'form': form})
+def books_report(request):
+    # Register the font
+    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    pdfmetrics.registerFont(TTFont('Nyala', 'static/fonts/Nyala.ttf'))
+    # Sample data from your models
+    books = Store.objects.filter(is_book = True)
+    # Create a PDF document
+    doc = SimpleDocTemplate("Books_in_store.pdf", pagesize=letter)
+    elements = []
+    # Define styles
+    styles = getSampleStyleSheet()
+    style_heading = styles["Title"]
+    style_normal = styles["Normal"]
+    style_heading1 = styles["Heading1"]
 
-def create_category(request):
-    if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('success_page')  # Replace 'success_page' with your success page URL.
-    else:
-        form = CategoryForm()
+   # Create a style using the registered font
+    style_normal.fontName = 'Nyala'
+    style_heading.fontName = 'Nyala'
 
-    return render(request, 'create_category.html', {'form': form})
+    elements.append(Spacer(1, -50))  # Remove some space
+    # Define the title text
+    title_text = "አንደሉስ ት/ቤት"
+    styles = getSampleStyleSheet()
+    title = Paragraph("<b>{}</b>".format(title_text), style_heading)
+    # Define the title text
+    Entitle_text = "ANDELUS SCHOOL"
+    styles = getSampleStyleSheet()
+    Entitle = Paragraph("<b>{}</b>".format(Entitle_text), style_heading)
 
-def create_book(request):
-    if request.method == 'POST':
-        form = BookForm(request.POST)
-        if form.is_valid():
-            book = form.save()
-            return redirect('index')  
-    else:
-        form = BookForm()
+    # Load the image
+    image_path = "static/img/login.png"
+    logo = Image(image_path, width=65, height=60)
 
-    return render(request, 'create_book.html', {'form': form})
+    # Create a table for layout
+    data = [[title, logo, Entitle]]
+    table = Table(data, colWidths=[200, 100 , 200], hAlign="CENTER")
+    table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    elements.append(table)
+    elements.append(Spacer(1, 10))  # Add some space
 
-def create_item(request):
-    if request.method == 'POST':
-        form = ItemForm(request.POST)
-        if form.is_valid():
-            item = form.save()
-            return redirect('index')  
-    else:
-        form = ItemForm()
+    #Add todays date
+    today = [
+            ["Date:", str(datetime.now().strftime('%d-%m-%Y'))],
+            ["Ref.No:", "AND-Adama-00"],
+        ]
+    report_date = Table(today, colWidths=[60, 75] ,hAlign="RIGHT")
+    report_date.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),
+        ]))
+    elements.append(report_date)
+    elements.append(Spacer(1, 12))  # Add some space
 
-    return render(request, 'create_item.html', {'form': form})
+    
+        # Add title
+    title = Paragraph("<b>Books In Store</b>", style_heading)
+    title_table = Table([[title]], colWidths=[500], hAlign="CENTER")
+    elements.append(title_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    # Add Orders Table
+    data = [["Book Name", "Description", "Subjects","Grade", "Pages", "Quantity"]]
+    
+    for book in books:
+        # Split description into multiple lines if it exceeds a certain length
+        max_description_width = 30  # Adjust as needed
+        description = book.books.description
+        description_lines = [description[i:i + max_description_width] for i in range(0, len(description), max_description_width)]
+        data.append([
+            book.books.book_name,
+            "\n".join(description_lines),
+                str(book.books.subject),
+                str(book.books.grade),
+                str(book.books.pages),
+                str(book.quantity),
+            ])
+    orders_table = Table(data, colWidths=[100, 200, 100, 50, 50, 50])
+
+    # Define the alternating row colors
+    TableOddFill = colors.HexColor(0xEEEEEE)  # Light grey color
+    TableEvenFill = colors.HexColor(0xFFFFFF)  # White color
+    TableHeaderFill = colors.HexColor(0x3498DB)  # Header blue color
+
+    orders_table.setStyle(TableStyle([
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),  # Inner grid lines
+    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Outer border
+    ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size for data cells
+    ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),  # Font style for data cells
+    ('FONTSIZE', (0, 0), (-1, 0), 10),  # Font size for header row
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Font style for header row
+    ('BACKGROUND', (0, 0), (-1, 0), TableHeaderFill),  # Header row background color
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Header row text color
+    ('TOPPADDING', (0, 0), (-1, -1), 5),  # Top padding
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Bottom padding
+    ]))
+
+    # Apply alternating row colors for data rows
+    for i in range(1, len(data)):
+        if i % 2 == 0:
+            bg_color = TableEvenFill
+        else:
+            bg_color = TableOddFill
+        orders_table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), bg_color)]))
+    elements.append(orders_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+  
+    # Build the PDF document
+    doc.build(elements)
+
+   # Return the PDF file as a response for download
+    with open("Books_in_store.pdf", "rb") as pdf_file:
+        response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=Books_in_store.pdf"
+        return response
+
+def items_report(request):
+    
+    # Register the font
+    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    
+    pdfmetrics.registerFont(TTFont('Nyala', 'static/fonts/Nyala.ttf'))
+
+ 
+    # Sample data from your models
+    items = Store.objects.filter(is_item = True)
+    # Create a PDF document
+    doc = SimpleDocTemplate("Items_in_store.pdf", pagesize=letter)
+    elements = []
+
+    # Define styles
+    styles = getSampleStyleSheet()
+    style_heading = styles["Title"]
+    style_normal = styles["Normal"]
+    
+    style_heading1 = styles["Heading1"]
+
+   # Create a style using the registered font
+    style_normal.fontName = 'Nyala'
+    style_heading.fontName = 'Nyala'
+
+
+    elements.append(Spacer(1, -50))  # Remove some space
+    # Define the title text
+    title_text = "አንደሉስ ት/ቤት"
+    styles = getSampleStyleSheet()
+    title = Paragraph("<b>{}</b>".format(title_text), style_heading)
+    # Define the title text
+    Entitle_text = "ANDELUS SCHOOL"
+    styles = getSampleStyleSheet()
+    Entitle = Paragraph("<b>{}</b>".format(Entitle_text), style_heading)
+
+    # Load the image
+    image_path = "static/img/login.png"
+    logo = Image(image_path, width=65, height=60)
+
+    # Create a table for layout
+    data = [[title, logo, Entitle]]
+    table = Table(data, colWidths=[200, 100 , 200], hAlign="CENTER")
+    table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    elements.append(table)
+    
+    elements.append(Spacer(1, 10))  # Add some space
+
+    #Add todays date
+    today = [
+        ["Date:", str(datetime.now().strftime('%d-%m-%Y'))],
+        ["Ref.No:", "AND-Adama-00"],
+    ]
+    report_date = Table(today, colWidths=[60, 75] ,hAlign="RIGHT")
+    report_date.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),
+    ]))
+    elements.append(report_date)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    
+    # Add title
+    title = Paragraph("<b>Items In Store</b>", style_heading)
+    title_table = Table([[title]], colWidths=[500], hAlign="CENTER")
+    elements.append(title_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+   
+    # Add Orders Table
+    data = [["Item Name", "Description", "Quantity"]]
+    
+    for item in items:
+        # Split description into multiple lines if it exceeds a certain length
+        max_description_width = 30  # Adjust as needed
+        description = item.items.description
+        description_lines = [description[i:i + max_description_width] for i in range(0, len(description), max_description_width)]
+        data.append([
+           item.items.item_name,
+            "\n".join(description_lines),
+                str(item.quantity),
+            ])
+    orders_table = Table(data, colWidths=[150, 200, 150])
+
+    # Define the alternating row colors
+    TableOddFill = colors.HexColor(0xEEEEEE)  # Light grey color
+    TableEvenFill = colors.HexColor(0xFFFFFF)  # White color
+    TableHeaderFill = colors.HexColor(0x3498DB)  # Header blue color
+
+    # Apply styles to the table
+    # Apply styles to the table
+    # orders_table.setStyle(TableStyle([
+    #     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    #     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    #     ('BACKGROUND', (0, 0), (-1, 0), TableHeaderFill),  # Header row background color
+    #     ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Header row text color
+    #     ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),  # Inner grid lines
+    #     ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Outer border
+    #     ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size
+    #     ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),  # Font style
+    #     ('TOPPADDING', (0, 0), (-1, -1), 5),  # Top padding
+    #     ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Bottom padding
+    # ]))
+
+
+    orders_table.setStyle(TableStyle([
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),  # Inner grid lines
+    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Outer border
+    ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size for data cells
+    ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),  # Font style for data cells
+    ('FONTSIZE', (0, 0), (-1, 0), 10),  # Font size for header row
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Font style for header row
+    ('BACKGROUND', (0, 0), (-1, 0), TableHeaderFill),  # Header row background color
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Header row text color
+    ('TOPPADDING', (0, 0), (-1, -1), 5),  # Top padding
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Bottom padding
+    ]))
+
+    # Apply alternating row colors for data rows
+    for i in range(1, len(data)):
+        if i % 2 == 0:
+            bg_color = TableEvenFill
+        else:
+            bg_color = TableOddFill
+        orders_table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), bg_color)]))
+    elements.append(orders_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+  
+    # Build the PDF document
+    doc.build(elements)
+
+   # Return the PDF file as a response for download
+    with open("Items_in_store.pdf", "rb") as pdf_file:
+        response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=Items_in_store.pdf"
+        return response
+
+def wechi_report(request,order_id):
+    pdfmetrics.registerFont(TTFont('Nyala', 'static/fonts/Nyala.ttf'))
+   
+    order_group = OrderGroup.objects.get(id=order_id)  # Assuming you have an OrderGroup with ID 1
+    orders = order_group.orders.all()
+
+    # Create a PDF document
+    doc = SimpleDocTemplate("outgoing.pdf", pagesize=letter)
+    elements = []
+
+    # Define styles
+    styles = getSampleStyleSheet()
+    style_heading = styles["Title"]
+    style_normal = styles["Normal"]
+    style_heading1 = styles["Heading1"]
+
+   # Create a style using the registered font
+    style_normal.fontName = 'Nyala'
+    style_heading.fontName = 'Nyala'
+
+    elements.append(Spacer(1, -50))  # Remove some space
+    # Define the title text
+    title_text = "አንደሉስ ት/ቤት"
+    styles = getSampleStyleSheet()
+    title = Paragraph("<b>{}</b>".format(title_text), style_heading)
+    # Define the title text
+    Entitle_text = "ANDELUS SCHOOL"
+    styles = getSampleStyleSheet()
+    Entitle = Paragraph("<b>{}</b>".format(Entitle_text), style_heading)
+
+    # Load the image
+    image_path = "static/img/login.png"
+    logo = Image(image_path, width=65, height=60)
+
+    # Create a table for layout
+    data = [[title, logo, Entitle]]
+    table = Table(data, colWidths=[200, 100 , 200], hAlign="CENTER")
+    table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    elements.append(table)
+
+    elements.append(Spacer(1, 10))  # Add some space
+
+    #Add todays date
+    today = [
+        ["Date:", str(datetime.now().strftime('%d-%m-%Y'))],
+        ["Ref.No:", "AND-Adama-00"],
+    ]
+    report_date = Table(today, colWidths=[60, 75] ,hAlign="RIGHT")
+    report_date.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),
+    ]))
+    elements.append(report_date)
+    elements.append(Spacer(1, 12))  # Add some space
+
+        # Add title
+    title = Paragraph("<b> ወጪ መጠይቅ ሪፖርት  Outgoing Request Report </b>", style_heading)
+    title_table = Table([[title]], colWidths=[500], hAlign="CENTER")
+    elements.append(title_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+   
+   # Add Order Group Information
+   # Create a table for order information
+    order_info_data = [
+        [Paragraph("<b>የጠየቀው_አካል:</b>", style_normal), Paragraph(order_group.user.first_name, style_normal)],
+        [Paragraph("<b>የፈቀደው_አካል:</b>", style_normal), Paragraph(order_group.approved_by, style_normal)],
+        [Paragraph("<b>Order_Type:</b>", style_normal), Paragraph(order_group.order_type, style_normal)],
+        [Paragraph("<b>Date:</b>", style_normal), Paragraph(order_group.date.strftime('%d-%m-%Y'), style_normal)],
+        [Paragraph("<b>Status:</b>", style_normal), Paragraph(order_group.status, style_normal)],
+    ]
+    order_info_table = Table(order_info_data, colWidths=[80, 80], hAlign="CENTER")
+    order_info_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+    ]))
+    elements.append(order_info_table)
+    elements.append(Spacer(1, 12))  # Add some space
+    # Add Orders Table
+    data = [["Product", "Qty","Unit","Sub_Unit" ,"Sub_Qty","Conf_Qty", "Iss_Qty","Conf_Date "]]
+    for order in orders:
+        data.append([
+            order.books.subject + " Grade " + order.books.grade if order.books else order.items.item_name,
+            str(order.quantity),
+            str(order.unit),
+            str(order.subunit),
+            str(order.subunit_quantity),
+            str(order.confirmed_quantity),
+            str(order.issued_quantity),
+            str(order.issued_date.strftime('%d-%m-%Y')),
+        ])
+    orders_table = Table(data, colWidths=[130, 50, 50, 60, 60, 60, 60, 60 ])
+
+    # Define the alternating row colors
+    TableOddFill = colors.HexColor(0xEEEEEE)  # Light grey color
+    TableEvenFill = colors.HexColor(0xFFFFFF)  # White color
+    TableHeaderFill = colors.HexColor(0x3498DB)  # Header blue color
+
+    # Apply styles to the table
+    
+    orders_table.setStyle(TableStyle([
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),  # Inner grid lines
+    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Outer border
+    ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size for data cells
+    ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),  # Font style for data cells
+    ('FONTSIZE', (0, 0), (-1, 0), 10),  # Font size for header row
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Font style for header row
+    ('BACKGROUND', (0, 0), (-1, 0), TableHeaderFill),  # Header row background color
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Header row text color
+    ('TOPPADDING', (0, 0), (-1, -1), 5),  # Top padding
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Bottom padding
+    ]))
+    # Apply alternating row colors for data rows
+    for i in range(1, len(data)):
+        if i % 2 == 0:
+            bg_color = TableEvenFill
+        else:
+            bg_color = TableOddFill
+        orders_table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), bg_color)]))
+    elements.append(orders_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    # Add Total Price and Received By
+   
+    # Build the PDF document
+    doc.build(elements)
+
+   # Return the PDF file as a response for download
+    with open("outgoing.pdf", "rb") as pdf_file:
+        response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=outgoing.pdf"
+        return response
+
+def gebi_report(request,order_id):
+    pdfmetrics.registerFont(TTFont('Nyala', 'static/fonts/Nyala.ttf'))
+   
+    order_group = OrderGroup.objects.get(id=order_id)  # Assuming you have an OrderGroup with ID 1
+    orders = order_group.orders.all()
+
+    # Create a PDF document
+    doc = SimpleDocTemplate("incoming.pdf", pagesize=letter)
+    elements = []
+
+    # Define styles
+    styles = getSampleStyleSheet()
+    style_heading = styles["Title"]
+    style_normal = styles["Normal"]
+    style_heading1 = styles["Heading1"]
+
+   # Create a style using the registered font
+    style_normal.fontName = 'Nyala'
+    style_heading.fontName = 'Nyala'
+
+    elements.append(Spacer(1, -50))  # Remove some space
+    # Define the title text
+    title_text = "አንደሉስ ት/ቤት"
+    styles = getSampleStyleSheet()
+    title = Paragraph("<b>{}</b>".format(title_text), style_heading)
+    # Define the title text
+    Entitle_text = "ANDELUS SCHOOL"
+    styles = getSampleStyleSheet()
+    Entitle = Paragraph("<b>{}</b>".format(Entitle_text), style_heading)
+
+    # Load the image
+    image_path = "static/img/login.png"
+    logo = Image(image_path, width=65, height=60)
+
+    # Create a table for layout
+    data = [[title, logo, Entitle]]
+    table = Table(data, colWidths=[200, 100 , 200], hAlign="CENTER")
+    table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    elements.append(table)
+
+    elements.append(Spacer(1, 10))  # Add some space
+
+
+    today = [
+        ["Date:", str(datetime.now().strftime('%d-%m-%Y'))],
+        ["Ref.No:", "AND-Adama-00"],
+    ]
+    report_date = Table(today, colWidths=[60, 75] ,hAlign="RIGHT")
+    report_date.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),
+    ]))
+    elements.append(report_date)
+    elements.append(Spacer(1, 12))  # Add some space
+        # Add title
+    title = Paragraph("<b> ገቢ መጠይቅ ሪፖርት  Incoming Request Report </b>", style_heading)
+    title_table = Table([[title]], colWidths=[500], hAlign="CENTER")
+    elements.append(title_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+   
+   # Add Order Group Information
+   # Create a table for order information
+    order_info_data = [
+        [Paragraph("<b>የተገዛለት_ክፍል :</b>", style_normal), Paragraph(order_group.order_for, style_normal)],
+        [Paragraph("<b>ያስረከበው_አካል :</b>", style_normal), Paragraph(order_group.order_by, style_normal)],
+        [Paragraph("<b>የተረከበው_አካል :</b>", style_normal), Paragraph(order_group.recieved_by, style_normal)],
+        [Paragraph("<b>Date:</b>", style_normal), Paragraph(order_group.date.strftime('%d-%m-%Y'), style_normal)],
+        [Paragraph("<b>Status:</b>", style_normal), Paragraph(order_group.status, style_normal)],
+    ]
+    order_info_table = Table(order_info_data, colWidths=[80, 80], hAlign="CENTER")
+    order_info_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+    ]))
+    elements.append(order_info_table)
+    elements.append(Spacer(1, 12))  # Add some space
+    # Add Orders Table
+    data = [["Product", "Qty","Unit","Sub_Unit" ,"Sub_Qty","U.Price", "T.Price"," With Tax"]]
+    for order in orders:
+        data.append([
+            order.books.subject + " Grade " + order.books.grade if order.books else order.items.item_name,
+            str(order.quantity),
+            str(order.unit),
+            str(order.subunit),
+            str(order.subunit_quantity),
+            str(order.unit_price),
+            str(order.price),
+            str(order.total_price),
+        ])
+    orders_table = Table(data, colWidths=[130, 50, 50, 60, 60, 60, 60, 60 ])
+
+    # Define the alternating row colors
+    TableOddFill = colors.HexColor(0xEEEEEE)  # Light grey color
+    TableEvenFill = colors.HexColor(0xFFFFFF)  # White color
+    TableHeaderFill = colors.HexColor(0x3498DB)  # Header blue color
+
+    # Apply styles to the table
+    
+    orders_table.setStyle(TableStyle([
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),  # Inner grid lines
+    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Outer border
+    ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size for data cells
+    ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),  # Font style for data cells
+    ('FONTSIZE', (0, 0), (-1, 0), 10),  # Font size for header row
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Font style for header row
+    ('BACKGROUND', (0, 0), (-1, 0), TableHeaderFill),  # Header row background color
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Header row text color
+    ('TOPPADDING', (0, 0), (-1, -1), 5),  # Top padding
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Bottom padding
+    ]))
+    # Apply alternating row colors for data rows
+    for i in range(1, len(data)):
+        if i % 2 == 0:
+            bg_color = TableEvenFill
+        else:
+            bg_color = TableOddFill
+        orders_table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), bg_color)]))
+    elements.append(orders_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    # Add Total Price and Received By
+    total_price_received_by = [
+        ["Total Price:", str(order_group.total_price)+" ብር"],
+        ["Received By:", order_group.recieved_by],
+    ]
+    total_price_received_by_table = Table(total_price_received_by, colWidths=[60, 75] ,hAlign="RIGHT")
+    total_price_received_by_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Nyala'),
+    ]))
+    elements.append(total_price_received_by_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    # Build the PDF document
+    doc.build(elements)
+
+   # Return the PDF file as a response for download
+    with open("incoming.pdf", "rb") as pdf_file:
+        response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=incoming.pdf"
+        return response
+
+def generate_pdf_report(request):
+    # Sample data from your models
+    order_group = OrderGroup.objects.get(id=39)  # Assuming you have an OrderGroup with ID 1
+    orders = Order.objects.all()
+
+    # Create a PDF document
+    doc = SimpleDocTemplate("order_group_report.pdf", pagesize=letter)
+    elements = []
+
+    # Define styles
+    styles = getSampleStyleSheet()
+    style_heading = styles["Title"]
+    style_normal = styles["Normal"]
+    
+    style_heading1 = styles["Heading1"]
+
+    elements.append(Spacer(1, -50))  # Remove some space
+    # Define the title text
+    title_text = "Andelus School"
+    styles = getSampleStyleSheet()
+    style_heading = styles["Title"]
+    title = Paragraph("<b>{}</b>".format(title_text), style_heading)
+
+    # Load the image
+    image_path = "static/img/login.png"
+    logo = Image(image_path, width=65, height=60)
+
+    # Create a table for layout
+    data = [[title, logo]]
+    table = Table(data, colWidths=[350, 350], hAlign="CENTER")
+    table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    elements.append(table)
+        # Add title
+    title = Paragraph("<b>Order Group Report</b>", style_heading)
+    title_table = Table([[title]], colWidths=[500], hAlign="CENTER")
+    elements.append(title_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+   # Add Order Group Information
+   # Create a table for order information
+    order_info_data = [
+        [Paragraph("<b>Order Type:</b>", style_normal), Paragraph(order_group.order_type, style_normal)],
+        [Paragraph("<b>Order For:</b>", style_normal), Paragraph(order_group.order_for, style_normal)],
+        [Paragraph("<b>Status:</b>", style_normal), Paragraph(order_group.status, style_normal)],
+        [Paragraph("<b>Date:</b>", style_normal), Paragraph(order_group.date.strftime('%Y-%m-%d'), style_normal)]
+    ]
+    order_info_table = Table(order_info_data, colWidths=[80, 80], hAlign="CENTER")
+    order_info_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+    ]))
+    elements.append(order_info_table)
+    elements.append(Spacer(1, 12))  # Add some space
+    # Add Orders Table
+    data = [["Products", "Quantity", "Price", "Tax", "Unit"]]
+    for order in orders:
+        data.append([
+            order.books.book_name if order.books else order.items.item_name,
+            str(order.quantity),
+            str(order.price),
+            str(order.tax),
+            order.unit
+        ])
+    orders_table = Table(data, colWidths=[200, 50, 50, 50, 50])
+
+    # Define the alternating row colors
+    TableOddFill = colors.HexColor(0xEEEEEE)  # Light grey color
+    TableEvenFill = colors.HexColor(0xFFFFFF)  # White color
+    TableHeaderFill = colors.HexColor(0x3498DB)  # Header blue color
+
+    # Apply styles to the table
+    # Apply styles to the table
+    orders_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, 0), (-1, 0), TableHeaderFill),  # Header row background color
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Header row text color
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),  # Inner grid lines
+        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Outer border
+        ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),  # Font style
+        ('TOPPADDING', (0, 0), (-1, -1), 5),  # Top padding
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Bottom padding
+    ]))
+
+    # Apply alternating row colors for data rows
+    for i in range(1, len(data)):
+        if i % 2 == 0:
+            bg_color = TableEvenFill
+        else:
+            bg_color = TableOddFill
+        orders_table.setStyle(TableStyle([('BACKGROUND', (0, i), (-1, i), bg_color)]))
+    elements.append(orders_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    # Add Total Price and Received By
+    total_price_received_by = [
+        ["Total Price:", str(order_group.total_price)],
+        ["Received By:", order_group.recieved_by],
+    ]
+    total_price_received_by_table = Table(total_price_received_by, colWidths=[100, 200])
+    total_price_received_by_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(total_price_received_by_table)
+    elements.append(Spacer(1, 12))  # Add some space
+
+    # Build the PDF document
+    doc.build(elements)
+
+   # Return the PDF file as a response for download
+    with open("order_group_report.pdf", "rb") as pdf_file:
+        response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=order_group_report.pdf"
+        return response
 
 
 def index(request):
-   # Calculate the total orders, total items, total books, and other data
     total_orders = OrderGroup.objects.count()
     total_items = Item.objects.count()
     total_books = Book.objects.count()
 
     if request.user.groups.filter(name='Director').exists():
-        pending_orders_count = OrderGroup.objects.filter(status='Pending', user= request.user).count()
-        accepted_orders_count = OrderGroup.objects.filter(status='Accepted', user= request.user).count()
-        completed_orders_count = OrderGroup.objects.filter(status='Complete', user= request.user).count()
-        
-        total_orders = OrderGroup.objects.filter(user= request.user).count()
-        total_items = Order.objects.filter(user= request.user, is_item = True).count()
-        total_books = Order.objects.filter(user= request.user, is_book = True).count()
-        outgoing_orders = OrderGroup.objects.filter(user= request.user,order_type='outgoing').order_by('-date')[:5]
-        context = {
-        'pending_orders_count': pending_orders_count,
-        'accepted_orders_count': accepted_orders_count,
-        'completed_orders_count': completed_orders_count, 
-        'total_orders': total_orders,
-        'total_items': total_items,
-        'total_books': total_books,
-        'outgoing_orders': outgoing_orders,
-    }
+        pending_orders_count = OrderGroup.objects.filter(status='Pending', user=request.user).count()
+        accepted_orders_count = OrderGroup.objects.filter(status='Accepted', user=request.user).count()
+        completed_orders_count = OrderGroup.objects.filter(status='Complete', user=request.user).count()
 
+        total_orders = OrderGroup.objects.filter(user=request.user).count()
+        total_items = Order.objects.filter(user=request.user, is_item=True).count()
+        total_books = Order.objects.filter(user=request.user, is_book=True).count()
+        outgoing_orders = OrderGroup.objects.filter(user=request.user, order_type='outgoing').order_by('-date')[:5]
+
+        context = {
+            'pending_orders_count': pending_orders_count,
+            'accepted_orders_count': accepted_orders_count,
+            'completed_orders_count': completed_orders_count,
+            'total_orders': total_orders,
+            'total_items': total_items,
+            'total_books': total_books,
+            'outgoing_orders': outgoing_orders,
+        }
     else:
-        orders = Order.objects.all()
         incoming_orders = OrderGroup.objects.filter(order_type='incoming').order_by('-date')[:5]
         outgoing_orders = OrderGroup.objects.filter(order_type='outgoing').order_by('-date')[:5]
         pending_orders_count = OrderGroup.objects.filter(status='Pending').count()
@@ -93,15 +727,13 @@ def index(request):
         completed_orders_count = OrderGroup.objects.filter(status='Complete').count()
         books = Store.objects.filter(is_book=True)[:5]
         items = Store.objects.filter(is_item=True)[:5]
-  
-    # Prepare the context dictionary with the calculated values and data
+
         context = {
             'total_orders': total_orders,
             'total_items': total_items,
             'total_books': total_books,
             'books': books,
             'items': items,
-            'orders': orders,  
             'incoming_orders': incoming_orders,
             'outgoing_orders': outgoing_orders,
             'pending_orders_count': pending_orders_count,
@@ -109,7 +741,6 @@ def index(request):
             'completed_orders_count': completed_orders_count,
         }
 
-    # Render the template with the context
     return render(request, 'index.html', context)
 
 def book_store(request):
@@ -127,77 +758,136 @@ def item_store(request):
     return render(request, 'store/store.html', context)
 
 
+@transaction.atomic
 def add_book(request):
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
         if form.is_valid():
-            p = 'book'
-            existing_book = Book.objects.filter(
-                book_name=form.cleaned_data['book_name'],
-                grade=form.cleaned_data['grade'],
-                pages=form.cleaned_data['pages'],
-                subject=form.cleaned_data['subject'],
-            ).first()
+            try:
+                existing_book = Book.objects.get(
+                    book_name=form.cleaned_data['book_name'],
+                    grade=form.cleaned_data['grade'],
+                    pages=form.cleaned_data['pages'],
+                    subject=form.cleaned_data['subject'],
+                )
+                # If the book exists, add a message and redirect to the previous page
 
-            if existing_book:
-                # If the book exists, redirect to product_detail
-                return redirect(reverse('product_detail', kwargs={'product_id': existing_book.id}) + f'?p=book')
-            else:
+                messages.warning(request, 'Book already exists')
+                return redirect(request.META.get('HTTP_REFERER', 'index'))
+
+            except ObjectDoesNotExist:
                 # If the book doesn't exist, save the form and redirect
                 book = form.save()
+                Store.objects.create(books=book, is_book=True)
+                messages.success(request, 'Book added successfully')
                 return redirect(reverse('product_detail', kwargs={'product_id': book.id}) + f'?p=book')
+        else:
+            # Form is not valid, add a message and redirect to the previous page
+            messages.error(request, 'Invalid form data')
+            return redirect(request.META.get('HTTP_REFERER', 'index'))
 
+    # If the request method is not POST, redirect to the previous page
+    messages.error(request, 'Invalid request')
+    return redirect(request.META.get('HTTP_REFERER', 'index'))
+    
+@transaction.atomic
 def add_item(request):
-   if request.method == 'POST':
+    if request.method == 'POST':
         form = ItemForm(request.POST, request.FILES)
         if form.is_valid():
-            p = 'item'
-            existing_item = Item.objects.filter(
+            try:
+                existing_item = Item.objects.get(
                 item_name=form.cleaned_data['item_name'],
-               
-            ).first()
+            )
+                # If the item exists, add a message and redirect to the previous page
+                messages.warning(request, 'Item already exists')
+                return redirect(request.META.get('HTTP_REFERER', 'index'))
 
-            if existing_item:
-                # If the book exists, redirect to product_detail
-                return redirect(reverse('product_detail', kwargs={'product_id': existing_item.id}) + f'?p=item')
-            else:
+            except ObjectDoesNotExist:
                 # If the book doesn't exist, save the form and redirect
                 item = form.save()
+                Store.objects.create(items=item, is_item=True)
+                messages.success(request, 'Item added successfully')
                 return redirect(reverse('product_detail', kwargs={'product_id': item.id}) + f'?p=item')
+        else:
+            # Form is not valid, add a message and redirect to the previous page
+            messages.error(request, 'Invalid form data')
+            return redirect(request.META.get('HTTP_REFERER', 'index'))
+
+    # If the request method is not POST, redirect to the previous page
+    messages.error(request, 'Invalid request')
+    return redirect(request.META.get('HTTP_REFERER', 'index'))
 
 # detail to add quantity and other like price , unit ... to the list
-def product_detail(request,product_id):
-    product_type = request.GET['p']
-    if request.user.groups.filter(name='Custodian').exists():
-        if product_type == 'book':
-            page = 'book'
-            product = Book.objects.get(id = product_id)
-            book = Store.objects.get(books = product)
-            product_quantity =  book.quantity
-            form = OrderForm()
-        elif product_type == 'item':
-            page = 'item'
-            product = Item.objects.get(id = product_id)
-            item = Store.objects.get(items = product)
-            product_quantity =  item.quantity
-            form = OrderForm( )
+# def product_detail(request,product_id):
+#     product_type = request.GET['p']
+#     if request.user.groups.filter(name='Custodian').exists():
+#         if product_type == 'book':
+#             page = 'book'
+#             product = Book.objects.get(id = product_id)
+#             book = Store.objects.get(books = product)
+#             product_quantity =  book.quantity
+#             form = OrderForm()
+#         elif product_type == 'item':
+#             page = 'item'
+#             product = Item.objects.get(id = product_id)
+#             item = Store.objects.get(items = product)
+#             product_quantity =  item.quantity
+#             form = OrderForm( )
    
-    elif request.user.groups.filter(name='Director').exists():
-        if product_type == 'book':
-            page = 'book'
-            product = Book.objects.get(id = product_id)
-            book = Store.objects.get(books = product)
-            product_quantity =  book.quantity
-            form = StaffOrderForm()
-        elif product_type == 'item':
-            page = 'item'
-            product = Item.objects.get(id = product_id)
-            item = Store.objects.get(items = product)
-            product_quantity =  item.quantity
-            form = StaffOrderForm( )
-    context = {'product':product,'page':page, 'form':form,'product_quantity':product_quantity }
-    return render(request, 'store/product_detail.html', context)
+#     elif request.user.groups.filter(name='Director').exists():
+#         if product_type == 'book':
+#             page = 'book'
+#             product = Book.objects.get(id = product_id)
+#             book = Store.objects.get(books = product)
+#             product_quantity =  book.quantity
+#             form = StaffOrderForm()
+#         elif product_type == 'item':
+#             page = 'item'
+#             product = Item.objects.get(id = product_id)
+#             item = Store.objects.get(items = product)
+#             product_quantity =  item.quantity
+#             form = StaffOrderForm( )
+#     context = {'product':product,'page':page, 'form':form,'product_quantity':product_quantity }
+#     return render(request, 'store/product_detail.html', context)
 
+def product_detail(request, product_id):
+  
+    try:
+        product_type = request.GET.get('p')
+        if product_type not in ['book', 'item']:
+            messages.error(request, "Invalid product type")
+            return redirect(request.META.get('HTTP_REFERER', 'your_default_url'))
+    
+        if request.user.groups.filter(name='Custodian').exists():
+            form_class = OrderForm
+        elif request.user.groups.filter(name='Director').exists():
+            form_class = StaffOrderForm
+        else:
+            messages.error(request, "You do not have permission to view this page")
+            return redirect(request.META.get('HTTP_REFERER', 'your_default_url'))
+
+        if product_type == 'book':
+            product = Book.objects.get(id=product_id)
+            store = Store.objects.get(books=product)
+        elif product_type == 'item':
+            product = Item.objects.get(id=product_id)
+            store = Store.objects.get(items=product)
+
+        product_quantity = store.quantity
+        form = form_class()
+
+        context = {
+            'product': product,
+            'page': product_type,
+            'form': form,
+            'product_quantity': product_quantity,
+        }
+        return render(request, 'store/product_detail.html', context)
+    except (Book.DoesNotExist, Item.DoesNotExist, Store.DoesNotExist):
+        messages.error(request, "Product not found")
+        return redirect(request.META.get('HTTP_REFERER', 'your_default_url'))
+        
 def store_detail(request,store_id):
     product_type = request.GET['p']
     product = Store.objects.get(id = store_id)
@@ -242,7 +932,7 @@ def finish_order(request):
             status='Complete',
             order_for= order_for,
             order_by= order_by,
-            date=datetime.datetime.today(),
+            date=datetime.today(),
             recieved_by= recieved_by,
             total_price= overall_total
             )
@@ -254,7 +944,8 @@ def finish_order(request):
             # Iterate through the cart
             for product_key, product_data in cart.cart.items():
                 product_id, product_type = product_key.split('_')
-                
+                 
+                unit_price = product_data['price'] 
                 total = product_data['quantity'] * product_data['price'] 
                 tax_price = total * (float( product_data['tax'])/100)
                 total_price = total + tax_price
@@ -264,6 +955,7 @@ def finish_order(request):
                     quantity=product_data['quantity'],
                     subunit_quantity=product_data['subunit_quantity'],
                     price= total,
+                    unit_price= unit_price,
                     tax= product_data['tax'],
                     total_price= total_price,
                     order_type='incoming',  # Set order type as needed

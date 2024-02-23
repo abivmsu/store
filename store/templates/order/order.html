@@ -3,6 +3,7 @@
 {% block content %}
 <!-- Begin Page Content -->
 <div class="container-fluid">
+  <a href="{% url 'generate_pdf_report' %}" class="btn btn-primary">Download PDF Report</a>
   {% if page == 'gebi' %}
 
      {% if request.user.groups.all.0.name == 'Custodian' %}
@@ -207,7 +208,7 @@
                   {% for order in order_group %}
                   <tr>
                       <td class="align-middle text-center">{{ forloop.counter }}</td>
-                      <td class="align-middle text-center ">{{ order.date }}</td>
+                      <td class="align-middle text-center ">{{ order.id }}</td>
                       <td class="align-middle text-center">{{ order.order_by }}</td>
                       <td class="align-middle">
                         <ul class="list-group">
