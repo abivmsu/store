@@ -63,7 +63,7 @@
                         <h6 class="collapse-header">list of orders:</h6>
                         <a class="collapse-item" href="{% url 'orders' %}?p=gebi">ገቢ መጠይቆች</a>
                         <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ወጪ መጠይቆች</a>
-                        <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ግዢ መጠይቆች</a>
+                        <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">ግዢ መጠይቆች</a>
                     </div>
                 </div>
             </li>
@@ -88,7 +88,6 @@
                             <a class="collapse-item" href="{% url 'teachers_list' %}?p=gebi">List</a>
                             <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">አስረክብ</a>
                             <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">ተረከብ</a>
-                            <a class="collapse-item" data-toggle="modal" data-target="#comingSoonModal" href="#">ግዢ መጠይቆች</a>
                             {% comment %} <a class="collapse-item" href="{% url 'asrekeb' %}?p=gebi">አስረክብ</a>
                             <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ተረከብ</a>
                             <a class="collapse-item" href="{% url 'orders' %}?p=wechi">ግዢ መጠይቆች</a> {% endcomment %}
