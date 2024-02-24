@@ -54,7 +54,7 @@
                                 </div>
                                 <!-- Quantity -->
                                 <div class="d-grid gap-2">
-                                    <p> Unit: <strong>{{ product.unit }}</strong></p>
+                                    <p> Unit: <strong>{{ product.id }}</strong></p>
                                     <p> Sub Qty + Unit: <strong>{{ product.subunit_quantity }} {{ product.sub_unit }}</strong></p>
                                 </div>
                                 <!-- Price -->
@@ -166,6 +166,7 @@
                                             </button>
                                             <input min="1" max="{{ product.store_quantity }}" style="text-align: center;" name="quantity" value="{{ product.quantity }}"
                                             type="number" class="form-control idd_quantity" />
+                                            <input value="{{ product.store_quantity }}" type="hidden" class="store_qty" />
                                             <button class="btn btn-primary" type="button"
                                             onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
                                             <i class="fas fa-plus"></i>
@@ -388,7 +389,7 @@
               </div>
               <div class="form-group">
                 <label for="inputAddress2">የተረከበው</label>
-                <input type="text" class="form-control" name="recieved_by" value="{{user}}"placeholder=" " required >
+                <input type="text" class="form-control" name="recieved_by" value="{{user}}" placeholder=" " required >
                 </div>              
             <input type="hidden" name="overall_total" value="{{overall_total}}">
           <div class="modal-footer">
@@ -443,53 +444,83 @@
   // Check if button pressed
   $(document).on('click', '.update-cart', function(e){
     e.preventDefault();
-    var productid = $(this).data('index');
-    var quantity = $(this).closest('.row').find('.idd_quantity').val();
-    var price = $(this).closest('.row').find('.idd_price').val();
-      $.ajax({
-          type: 'POST',
-          url: '{% url 'list_update' %}',
-          data: {
-      product_id: $(this).data('index'),
-      product_quantity: quantity,
-      product_price: price,
-      csrfmiddlewaretoken: '{{ csrf_token }}',
-      action: 'post'
-          },
-  
-          success: function(json){
-            //  console.log(json.qty)
-            //document.getElementById("list_quantity").textContent = json.qty
-            location.reload();
-          },
-  
-          error: function(xhr, errmsg, err){
-  
-          }
-  
-  
-      });
-  
-  
-  
-  })  
 
-  $(document).on('click', '.remove-cart', function(e){
-    e.preventDefault();
-      $.ajax({
-          type: 'POST',
-          url: '{% url 'list_delete' %}',
-          data: {
-      product_id: $(this).data('index'),
-      csrfmiddlewaretoken: '{{ csrf_token }}',
-      action: 'post'
-          },
-          success: function(json){
-            location.reload();
-          },
-          error: function(xhr, errmsg, err){
-          }
-      });
-  })  
+        var productid = $(this).data('index');
+        var quantity = $(this).closest('.row').find('.idd_quantity').val();
+        var price = $(this).closest('.row').find('.idd_price').val();
+        var store_quantity = $(this).closest('.row').find('.store_qty').val();
+        var quantityField = $(this).closest('.row').find('.idd_quantity');
+
+        // Director or Custodian logic
+        var groupName = "{{ request.user.groups.all.0.name }}";
+        if (groupName === 'Director' && parseInt(quantity) > store_quantity) {
+            showInputError(quantityField, 'Please reduce Quantity.');
+            alertify.error('Please reduce the quantity.');
+            return; // Stop execution
+        }
+
+        // Send AJAX request
+        $.ajax({
+            type: 'POST',
+            url: '{% url 'list_update' %}',
+            data: {
+                product_id: productid,
+                product_quantity: quantity,
+                store_quantity: store_quantity,
+                product_price: price,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                action: 'post'
+            },
+            success: function(json){
+                location.reload();
+            },
+            error: function(xhr, errmsg, err){
+                console.log(err);
+            }
+        });
+    });
+
+  function showInputError(inputField, message) {
+        // Show error message next to the input field
+        inputField.addClass('is-invalid');
+        inputField.next('.invalid-feedback').text(message).show();
+    }
+
+    function hideInputError(inputField) {
+        // Hide error message and remove validation styling
+        inputField.removeClass('is-invalid');
+        inputField.next('.invalid-feedback').text('').hide();
+    }
+
+    function showError(message) {
+        // Display error message using Alertify
+        alertify.alert('Error', message);
+    }
+
+
+    $(document).on('click', '.remove-cart', function(e){
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: '{% url 'list_delete' %}',
+            data: {
+        product_id: $(this).data('index'),
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        action: 'post'
+            },
+            success: function(json){
+                var quantity = json.qty;
+                if (quantity === 0) {
+                    // Redirect to specific page for an empty cart
+                    window.location.href = '{% url 'index' %}';
+                } else {
+                    // Reload current page
+                    location.reload();
+                }
+            },
+            error: function(xhr, errmsg, err){
+            }
+        });
+    })  
 </script>
 {% endblock%}

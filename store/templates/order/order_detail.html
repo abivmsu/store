@@ -12,6 +12,8 @@
                 <a href="#" data-toggle="modal" data-target="#generate_report" data-type="ገቢ Request" data-url="{% url 'gebi_report' order.id %}" class="btn btn-sm btn-info shadow-sm report-btn">
                     <i class="fas fa-download fa-sm text-white-50"></i> Download Order
                 </a>
+                <button type="button" class="btn btn-sm btn-warning" >  <i class="fas fa-calculator"></i> {{order.total_price}} ብር</button>       
+                  
             {% endif %}
         {% elif order.order_type == 'outgoing' %}
                <a href="#" data-toggle="modal" data-target="#generate_report" data-type="ወጪ Request" data-url="{% url 'wechi_report' order.id%}" class="btn btn-sm btn-info shadow-sm report-btn">
@@ -65,9 +67,9 @@
                                         </h5>
                                     </div>
                                     <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
+                                        <div class="row ">
+                                            <div class="col-md-6 d-flex justify-content-center align-items-center ">
+                                                <img src="{% if product.is_book %}{{ product.books.image.url }}{% elif product.is_item %}{{ product.items.image.url }}{% endif %}" class="img-fluid rounded" style="max-height: 250px; max-width:250px;" alt="{% if product.is_book %}{{ product.books.book_name }}{% elif product.is_item %}{{ product.items.item_name }}{% endif %}">
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="card">
@@ -137,7 +139,7 @@
                                                         <hr>
                                                         <div class="row">
                                                             <div class="col-2">
-                                                                <i class="fas fa-rueler">&#x1F4B0;</i>
+                                                                <i class="fas fa-calculator"></i>
                                                             </div>
                                                             <div class="col-10">
                                                                 <p class="card-text"><strong>Unit Price:</strong> {{ product.unit_price }}</p>
@@ -146,7 +148,7 @@
                                                          <hr>
                                                         <div class="row">
                                                             <div class="col-2">
-                                                                <i class="fas fa-rueler">&#x1F4B0;</i>
+                                                                <i class="fas fa-calculator"></i>
                                                             </div>
                                                             <div class="col-10">
                                                                 <p class="card-text"><strong>Total Price:</strong> {{ product.price }}</p>
@@ -155,7 +157,7 @@
                                                          <hr>
                                                         <div class="row">
                                                             <div class="col-2">
-                                                                <i class="fas fa-rueler">&#x1F4B0;</i>
+                                                                <i class="fas fa-calculator"></i>
                                                             </div>
                                                             <div class="col-10">
                                                                 <p class="card-text"><strong>Total Price(Tax):</strong> {{ product.total_price }}</p>
@@ -180,6 +182,7 @@
                     {% elif order.order_type == 'outgoing' and order.status == 'Complete' %}
                         <button type="button" class="btn btn-info" onclick="issueAllQuantities()"> <i class="fas fa-check"></i> Update Order</button>       
                     {% endif %}
+                    
                 </div>
             </div>
         </div>
@@ -446,14 +449,13 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
-                    {% if order.order_type == 'outgoing'%}
-                        {% if order.status == 'Complete' or order.status == 'Accepted'  %}
-                            <button type="button" class="btn btn-info" onclick="confirmAllQuantities()"><i class="fas fa-check"></i> Update Confirmed Quanitty</button>      
-                    
-                        {% elif order.order_type == 'outgoing' and order.status != 'Complete' %}
-                             <button type="button" class="btn btn-info" onclick="confirmAllQuantities()"><i class="fas fa-check"></i> Confirm Quantities</button>   
+                    {% if order.order_type == 'outgoing' %}
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#comingSoonModal"><i class="fas fa-times"></i>  Decline Request</button>
+                        {% if order.status == 'Complete' or order.status == 'Accepted' %}
+                            <button type="button" class="btn btn-info" onclick="confirmAllQuantities()"><i class="fas fa-check"></i> Update Confirmed Quantity</button>      
+                        {% else %}
+                            <button type="button" class="btn btn-info" onclick="confirmAllQuantities()"><i class="fas fa-check"></i> Confirm Quantities</button>   
                         {% endif %}
-                  
                     {% endif %}
                 </div>
             </div>

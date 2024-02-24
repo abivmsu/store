@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden,JsonResponse , HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseForbidden,JsonResponse , HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed 
 from django.urls import reverse
 from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm, ProductGivenForm, ProductGivenDetailForm, StaffOrderForm
 from django.contrib import messages
@@ -889,210 +889,422 @@ def product_detail(request, product_id):
         messages.error(request, "Product not found")
         return redirect(request.META.get('HTTP_REFERER', 'your_default_url'))
         
-def store_detail(request,store_id):
-    product_type = request.GET['p']
-    product = Store.objects.get(id = store_id)
-    book_form = BookForm(instance= product.books)
-    store_form = StoreForm(instance= product)
-    item_form = ItemForm(instance= product.items)
-    if product_type == 'book':
-        if product.books:
-            if request.method == 'POST':
-                store_form = StoreForm(request.POST,instance= product)
-                book_form = BookForm(request.POST, request.FILES , instance= product.books)
-                if store_form.is_valid() and book_form.is_valid():
-                    store_form.save()
-                    book_form.save()
-                #return redirect(reverse('product_detail', kwargs={'product_id': book}) + f'?p=book')
-                return redirect('book_store')
-    elif product_type == 'item':
-        if product.items:
-            if request.method == 'POST':
-                store_form = StoreForm(request.POST,instance= product)
-                item_form = ItemForm(request.POST, request.FILES ,instance= product.items)
-                if store_form.is_valid() and item_form.is_valid():
-                    store_form.save()
-                    item_form.save()
-                #return redirect(reverse('product_detail', kwargs={'product_id': book}) + f'?p=book')
-                return redirect('item_store')
-    context = {'product':product, 'book_form':book_form, 'item_form':item_form, 'store_form':store_form}
-    return render(request, 'store/store_detail.html', context)
 
+def store_detail(request, store_id):
+    product_type = request.GET.get('p')
+    product = get_object_or_404(Store, id=store_id)
+    store_form = StoreForm(instance=product)
+    book_form = BookForm(instance=product.books) if product.books else None
+    item_form = ItemForm(instance=product.items) if product.items else None
+
+    if product_type == 'book' and product.books:
+        form = book_form
+        form_class = BookForm
+    elif product_type == 'item' and product.items:
+        form = item_form
+        form_class = ItemForm
+    else:
+        form = None
+        form_class = None
+
+    if request.method == 'POST' and form:
+        store_form = StoreForm(request.POST, instance=product)
+        form = form_class(request.POST, request.FILES, instance=getattr(product, product_type + 's'))
+        if store_form.is_valid() and form.is_valid():
+            store_form.save()
+            form.save()
+            if product_type == 'book':
+                messages.success(request, 'Book updated successfully.')
+                return redirect('book_store')
+            elif product_type == 'item':
+                messages.success(request, 'Item updated successfully.')
+                return redirect('item_store')
+        else:
+            messages.error(request, 'Form submission failed. Please check the input.')
+
+    context = {'product': product, 'product_type': product_type, 'book_form': book_form, 'item_form': item_form, 'store_form': store_form}
+    return render(request, 'store/store_detail.html', context)        
+
+# def store_detail(request,store_id):
+#     product_type = request.GET['p']
+#     product = Store.objects.get(id = store_id)
+#     book_form = BookForm(instance= product.books)
+#     store_form = StoreForm(instance= product)
+#     item_form = ItemForm(instance= product.items)
+#     if product_type == 'book':
+#         if product.books:
+#             if request.method == 'POST':
+#                 store_form = StoreForm(request.POST,instance= product)
+#                 book_form = BookForm(request.POST, request.FILES , instance= product.books)
+#                 if store_form.is_valid() and book_form.is_valid():
+#                     store_form.save()
+#                     book_form.save()
+#                 #return redirect(reverse('product_detail', kwargs={'product_id': book}) + f'?p=book')
+#                 return redirect('book_store')
+#     elif product_type == 'item':
+#         if product.items:
+#             if request.method == 'POST':
+#                 store_form = StoreForm(request.POST,instance= product)
+#                 item_form = ItemForm(request.POST, request.FILES ,instance= product.items)
+#                 if store_form.is_valid() and item_form.is_valid():
+#                     store_form.save()
+#                     item_form.save()
+#                 #return redirect(reverse('product_detail', kwargs={'product_id': book}) + f'?p=book')
+#                 return redirect('item_store')
+#     context = {'product':product, 'book_form':book_form, 'item_form':item_form, 'store_form':store_form}
+#     return render(request, 'store/store_detail.html', context)
 
 def finish_order(request):
-    if request.user.groups.filter(name='Custodian').exists():
-        if request.method == 'POST':
-            order_for = request.POST.get('order_for')
-            order_by = request.POST.get('order_by')
-            recieved_by = request.POST.get('recieved_by')
-            overall_total = request.POST.get('overall_total')
-            #if request.user.groups.filter(name='Custodian').exists():
-            user = request.user
-            order_group = OrderGroup(user=user, 
+    if request.method == 'POST':
+        # Check if the cart is empty
+        if not Cart(request).cart:
+            messages.warning(request, 'Your List is empty. Please add some products before completing the order.')
+            return redirect('list_summary')  # Adjust the URL name as per your project
+
+        if request.user.groups.filter(name='Custodian').exists():
+            return _handle_custodian_order(request)
+        elif request.user.groups.filter(name='Director').exists():
+            return _handle_director_order(request)
+        else:
+            messages.error(request, 'Access is forbidden. ')
+            return redirect(request.META.get('HTTP_REFERER', 'index'))
+
+    else:
+        # Add message indicating the action is not allowed for the current request method
+        messages.error(request, 'The action you requested is not allowed for the current request method.')
+        return redirect(request.META.get('HTTP_REFERER', 'index'))
+
+def _handle_custodian_order(request):
+    # Handle Custodian's order completion logic
+    order_for = request.POST.get('order_for')
+    order_by = request.POST.get('order_by')
+    recieved_by = request.POST.get('recieved_by')
+    overall_total = request.POST.get('overall_total')
+    # Validate form inputs
+    if not all([order_for, order_by, recieved_by, overall_total]):
+        messages.error(request, 'Please fill out all the fields.')
+        return redirect('list_summary')
+    
+    # Get the cart and iterate through the products
+    cart = Cart(request)
+    with transaction.atomic():
+        # Save the OrderGroup
+        user = request.user
+        order_group = OrderGroup(
+            user=user, 
             order_type='incoming',
             status='Complete',
-            order_for= order_for,
-            order_by= order_by,
+            order_for=order_for,
+            order_by=order_by,
             date=datetime.today(),
-            recieved_by= recieved_by,
-            total_price= overall_total
-            )
-            order_group.save()
-            # Get the cart and iterate through the products
-            cart = Cart(request)
-            # Use a transaction to ensure atomicity
-        with transaction.atomic():
-            # Iterate through the cart
-            for product_key, product_data in cart.cart.items():
-                product_id, product_type = product_key.split('_')
-                 
-                unit_price = product_data['price'] 
-                total = product_data['quantity'] * product_data['price'] 
-                tax_price = total * (float( product_data['tax'])/100)
-                total_price = total + tax_price
-                # Create an instance of the Order model for each product
-                order = Order(
-                    user=user,
-                    quantity=product_data['quantity'],
-                    subunit_quantity=product_data['subunit_quantity'],
-                    price= total,
-                    unit_price= unit_price,
-                    tax= product_data['tax'],
-                    total_price= total_price,
-                    order_type='incoming',  # Set order type as needed
-                    unit=product_data['unit'],  # Assuming you want the last unit in the cart
-                    subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
-                )
-                # Assuming 'books' and 'items' are related names in the Order model
-                if product_type == 'book':
-                    book = Book.objects.get(id= product_id)
-                    order.books=book
-                    order.is_book = True
-                    store_product, created = Store.objects.get_or_create(
-                        books_id=product_id,
-                        defaults={'is_book': True}
-                    )
-                elif product_type == 'item':
-                    item = Item.objects.get(id= product_id)
-                    order.items = item
-                    order.is_item = True
-                    store_product, created = Store.objects.get_or_create(
-                        items_id=product_id,
-                        defaults={'is_item': True}
-                    )
-                order.save()
-                if store_product:
-                    store_product.quantity += product_data['subunit_quantity']
-                    store_product.save()
-                order_group.orders.add(order)
-        # Clear the cart after completing the orders
-        cart.clear()
-        order_group = OrderGroup.objects.filter(user = user, order_type= 'incoming')
+            recieved_by=recieved_by,
+            total_price=overall_total
+        )
+        order_group.save()
+        for product_key, product_data in cart.cart.items():
+            product_id, product_type = product_key.split('_')
 
-        return redirect(reverse('orders') + f'?p=gebi')
-   
-    elif request.user.groups.filter(name='Director').exists():
-        if request.method == 'POST':
-            order_by = request.POST.get('order_by')
-            password = request.POST.get('password')
-              # Check if the provided password matches the user's password
-            if not request.user.check_password(password):
-                messages.error(request, 'Incorrect password. Please try again.')
-                return redirect(reverse('list_summary'))
-            #if request.user.groups.filter(name='Custodian').exists():
-            userr = request.user
-            order_group = OrderGroup(user=userr, 
+            # Create an instance of the Order model for each product
+            unit_price = product_data['price'] 
+            total = product_data['quantity'] * product_data['price'] 
+            tax_price = total * (float( product_data['tax'])/100)
+            total_price = total + tax_price
+            # Create an instance of the Order model for each product
+            order = Order(
+                user=user,
+                quantity=product_data['quantity'],
+                subunit_quantity=product_data['subunit_quantity'],
+                price= total,
+                unit_price= unit_price,
+                tax= product_data['tax'],
+                total_price= total_price,
+                order_type='incoming',  # Set order type as needed
+                unit=product_data['unit'],  # Assuming you want the last unit in the cart
+                subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
+            )
+            if product_type == 'book':
+                book = Book.objects.get(id=product_id)
+                order.books = book
+                order.is_book = True
+                store_product, _ = Store.objects.get_or_create(
+                    books_id=product_id,
+                    defaults={'is_book': True}
+                )
+            elif product_type == 'item':
+                item = Item.objects.get(id=product_id)
+                order.items = item
+                order.is_item = True
+                store_product, _ = Store.objects.get_or_create(
+                    items_id=product_id,
+                    defaults={'is_item': True}
+                )
+            order.save()
+
+            if store_product:
+                store_product.quantity += product_data['subunit_quantity']
+                store_product.save()
+            order_group.orders.add(order)
+    
+    # Clear the cart after completing the orders
+    cart.clear()
+    messages.success(request, 'Orders placed successfully.')
+    return redirect(reverse('orders') + '?p=gebi')
+
+def _handle_director_order(request):
+    # Handle Director's order completion logic
+    order_by = request.POST.get('order_by')
+    password = request.POST.get('password')
+    # Validate form inputs
+    if not all([order_by, password]):
+        messages.error(request, 'Please fill out all the fields.')
+        return redirect('list_summary')
+    
+    # Check password
+    if not request.user.check_password(password):
+        messages.error(request, 'Incorrect password. Please try again.')
+        return redirect('list_summary')
+    
+    # Get the cart and iterate through the products
+    cart = Cart(request)
+    with transaction.atomic():
+        # Save the OrderGroup
+        userr = request.user
+        order_group = OrderGroup(
+            user=userr, 
             order_type='outgoing',
             status='Pending',
-            order_by= order_by,
-            date=datetime.datetime.today(),
+            order_by=order_by,
+            date=datetime.today(),
+        )
+        order_group.save()
+        for product_key, product_data in cart.cart.items():
+            product_id, product_type = product_key.split('_')
+
+            # Create an instance of the Order model for each product
+            order = Order(
+                user=userr,
+                quantity=product_data['quantity'],
+                subunit_quantity=product_data['subunit_quantity'],
+                order_type='outgoing',  # Set order type as needed
+                unit=product_data['unit'],  # Assuming you want the last unit in the cart
+                subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
             )
-            order_group.save()
-            # Get the cart and iterate through the products
-            cart = Cart(request)
-            # Use a transaction to ensure atomicity
-        with transaction.atomic():
-            # Iterate through the cart
-            for product_key, product_data in cart.cart.items():
-                product_id, product_type = product_key.split('_')
+            if product_type == 'book':
+                book = Book.objects.get(id=product_id)
+                order.books = book
+                order.is_book = True
+            elif product_type == 'item':
+                item = Item.objects.get(id=product_id)
+                order.items = item
+                order.is_item = True
+            order.save()
+            order_group.orders.add(order)
 
-                # Create an instance of the Order model for each product
-                order = Order(
-                    user=userr,
-                    quantity=product_data['quantity'],
-                    subunit_quantity=product_data['subunit_quantity'],
-                    # price=product_data['price'],
-                    # total_price=product_data['quantity'] * product_data['price'],
-                    order_type='outgoing',  # Set order type as needed
-                    unit=product_data['unit'],  # Assuming you want the last unit in the cart
-                    subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
-                )
-                #Assuming 'books' and 'items' are related names in the Order model
-                if product_type == 'book':
-                    book = Book.objects.get(id= product_id)
-                    order.books=book
-                    order.is_book = True
-                    # store_product, created = Store.objects.get_or_create(
-                    #     books_id=product_id,
-                    #     defaults={'is_book': True}
-                    # )
-                elif product_type == 'item':
-                    item = Item.objects.get(id= product_id)
-                    order.items = item
-                    order.is_item = True
-                    # store_product, created = Store.objects.get_or_create(
-                    #     items_id=product_id,
-                    #     defaults={'is_item': True}
-                    # )
-                order.save()
-                # if store_product:
-                #     store_product.quantity += product_data['quantity']
-                #     store_product.save()
-                order_group.orders.add(order)
-            # Clear the cart after completing the orders
-            cart.clear()
-            order_group = OrderGroup.objects.filter(user = userr, order_type= 'outgoing')
+    # Clear the cart after completing the orders
+    cart.clear()
+    messages.success(request, 'Orders placed successfully.')
+    return redirect(reverse('orders') + '?p=wechi')
 
-            return redirect(reverse('orders') + f'?p=wechi')
-        return HttpResponseForbidden('Forbidden')
+# def finish_order(request):
+#     if request.user.groups.filter(name='Custodian').exists():
+#         if request.method == 'POST':
+#             order_for = request.POST.get('order_for')
+#             order_by = request.POST.get('order_by')
+#             recieved_by = request.POST.get('recieved_by')
+#             overall_total = request.POST.get('overall_total')
+#             #if request.user.groups.filter(name='Custodian').exists():
+#             user = request.user
+#             order_group = OrderGroup(user=user, 
+#             order_type='incoming',
+#             status='Complete',
+#             order_for= order_for,
+#             order_by= order_by,
+#             date=datetime.today(),
+#             recieved_by= recieved_by,
+#             total_price= overall_total
+#             )
+#             order_group.save()
+#             # Get the cart and iterate through the products
+#             cart = Cart(request)
+#             # Use a transaction to ensure atomicity
+#         with transaction.atomic():
+#             # Iterate through the cart
+#             for product_key, product_data in cart.cart.items():
+#                 product_id, product_type = product_key.split('_')
+                 
+#                 unit_price = product_data['price'] 
+#                 total = product_data['quantity'] * product_data['price'] 
+#                 tax_price = total * (float( product_data['tax'])/100)
+#                 total_price = total + tax_price
+#                 # Create an instance of the Order model for each product
+#                 order = Order(
+#                     user=user,
+#                     quantity=product_data['quantity'],
+#                     subunit_quantity=product_data['subunit_quantity'],
+#                     price= total,
+#                     unit_price= unit_price,
+#                     tax= product_data['tax'],
+#                     total_price= total_price,
+#                     order_type='incoming',  # Set order type as needed
+#                     unit=product_data['unit'],  # Assuming you want the last unit in the cart
+#                     subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
+#                 )
+#                 # Assuming 'books' and 'items' are related names in the Order model
+#                 if product_type == 'book':
+#                     book = Book.objects.get(id= product_id)
+#                     order.books=book
+#                     order.is_book = True
+#                     store_product, created = Store.objects.get_or_create(
+#                         books_id=product_id,
+#                         defaults={'is_book': True}
+#                     )
+#                 elif product_type == 'item':
+#                     item = Item.objects.get(id= product_id)
+#                     order.items = item
+#                     order.is_item = True
+#                     store_product, created = Store.objects.get_or_create(
+#                         items_id=product_id,
+#                         defaults={'is_item': True}
+#                     )
+#                 order.save()
+#                 if store_product:
+#                     store_product.quantity += product_data['subunit_quantity']
+#                     store_product.save()
+#                 order_group.orders.add(order)
+#         # Clear the cart after completing the orders
+#         cart.clear()
+#         order_group = OrderGroup.objects.filter(user = user, order_type= 'incoming')
+
+#         return redirect(reverse('orders') + f'?p=gebi')
+   
+#     elif request.user.groups.filter(name='Director').exists():
+#         if request.method == 'POST':
+#             order_by = request.POST.get('order_by')
+#             password = request.POST.get('password')
+#               # Check if the provided password matches the user's password
+#             if not request.user.check_password(password):
+#                 messages.error(request, 'Incorrect password. Please try again.')
+#                 return redirect(reverse('list_summary'))
+#             #if request.user.groups.filter(name='Custodian').exists():
+#             userr = request.user
+#             order_group = OrderGroup(user=userr, 
+#             order_type='outgoing',
+#             status='Pending',
+#             order_by= order_by,
+#             date=datetime.today(),
+#             )
+#             order_group.save()
+#             # Get the cart and iterate through the products
+#             cart = Cart(request)
+#             # Use a transaction to ensure atomicity
+#         with transaction.atomic():
+#             # Iterate through the cart
+#             for product_key, product_data in cart.cart.items():
+#                 product_id, product_type = product_key.split('_')
+
+#                 # Create an instance of the Order model for each product
+#                 order = Order(
+#                     user=userr,
+#                     quantity=product_data['quantity'],
+#                     subunit_quantity=product_data['subunit_quantity'],
+#                     # price=product_data['price'],
+#                     # total_price=product_data['quantity'] * product_data['price'],
+#                     order_type='outgoing',  # Set order type as needed
+#                     unit=product_data['unit'],  # Assuming you want the last unit in the cart
+#                     subunit=product_data['sub_unit'],  # Assuming you want the last unit in the cart
+#                 )
+#                 #Assuming 'books' and 'items' are related names in the Order model
+#                 if product_type == 'book':
+#                     book = Book.objects.get(id= product_id)
+#                     order.books=book
+#                     order.is_book = True
+#                     # store_product, created = Store.objects.get_or_create(
+#                     #     books_id=product_id,
+#                     #     defaults={'is_book': True}
+#                     # )
+#                 elif product_type == 'item':
+#                     item = Item.objects.get(id= product_id)
+#                     order.items = item
+#                     order.is_item = True
+#                     # store_product, created = Store.objects.get_or_create(
+#                     #     items_id=product_id,
+#                     #     defaults={'is_item': True}
+#                     # )
+#                 order.save()
+#                 # if store_product:
+#                 #     store_product.quantity += product_data['quantity']
+#                 #     store_product.save()
+#                 order_group.orders.add(order)
+#             # Clear the cart after completing the orders
+#             cart.clear()
+#             order_group = OrderGroup.objects.filter(user = userr, order_type= 'outgoing')
+
+#             return redirect(reverse('orders') + f'?p=wechi')
+#         return HttpResponseForbidden('Forbidden')
 
 def orders(request):
-    if request.GET['p'] == 'gebi':
-        page =  request.GET['p']
+    page = request.GET.get('p')  # Use get() to avoid KeyError if 'p' is not in GET parameters
+    
+    if page == 'gebi':
         if request.user.groups.filter(name='Custodian').exists():
-            order_group = OrderGroup.objects.filter( user = request.user, order_type= 'incoming').order_by('-date')
+            order_group = OrderGroup.objects.filter(user=request.user, order_type='incoming').order_by('-date')
         elif request.user.groups.filter(name='Manager').exists():
-            order_group = OrderGroup.objects.filter(order_type= 'incoming').order_by('-date')
-    elif request.GET['p'] =='wechi':
-        page =  request.GET['p']
-        if request.user.groups.filter(name='Director').exists():
-            order_group = OrderGroup.objects.filter( user = request.user, order_type= 'outgoing').order_by('-date')
-        elif request.user.groups.filter(name='Custodian').exists():
-            order_group = OrderGroup.objects.filter(Q(status='Complete') | Q(status='Accepted'), order_type='outgoing').order_by('-date')
+            order_group = OrderGroup.objects.filter(order_type='incoming').order_by('-date')
         else:
-            order_group = OrderGroup.objects.filter(order_type= 'outgoing').order_by('-date')
-    context= {'order_group': order_group, 'page':page}
+            messages.error(request, "You don't have permission to access this page.")
+            return redirect('index')  # Redirect to home or another appropriate page
+
+    elif page == 'wechi':
+        if request.user.groups.filter(name='Director').exists():
+            order_group = OrderGroup.objects.filter(user=request.user, order_type='outgoing').order_by('-date')
+        elif request.user.groups.filter(name='Custodian').exists():
+            order_group = OrderGroup.objects.filter(
+                Q(status='Complete') | Q(status='Accepted'), order_type='outgoing'
+            ).order_by('-date')
+        else:
+            order_group = OrderGroup.objects.filter(order_type='outgoing').order_by('-date')
+    else:
+        messages.error(request, "Invalid page parameter.")
+        return redirect('index')  # Redirect to home or another appropriate page
+
+    context = {'order_group': order_group, 'page': page}
     return render(request, 'order/order.html', context)
 
+# def orders(request):
+#     if request.GET['p'] == 'gebi':
+#         page =  request.GET['p']
+#         if request.user.groups.filter(name='Custodian').exists():
+#             order_group = OrderGroup.objects.filter( user = request.user, order_type= 'incoming').order_by('-date')
+#         elif request.user.groups.filter(name='Manager').exists():
+#             order_group = OrderGroup.objects.filter(order_type= 'incoming').order_by('-date')
+#     elif request.GET['p'] =='wechi':
+#         page =  request.GET['p']
+#         if request.user.groups.filter(name='Director').exists():
+#             order_group = OrderGroup.objects.filter( user = request.user, order_type= 'outgoing').order_by('-date')
+#         elif request.user.groups.filter(name='Custodian').exists():
+#             order_group = OrderGroup.objects.filter(Q(status='Complete') | Q(status='Accepted'), order_type='outgoing').order_by('-date')
+#         else:
+#             order_group = OrderGroup.objects.filter(order_type= 'outgoing').order_by('-date')
+#     context= {'order_group': order_group, 'page':page}
+#     return render(request, 'order/order.html', context)
+
 def order_detail(request,order_id):
-    order = OrderGroup.objects.get(id = order_id)
+    order = get_object_or_404(OrderGroup, id=order_id)
     context = {'order':order}
     return render(request, 'order/order_detail.html', context)
 
-
-
-
-@require_POST
 def confirm_all_quantities(request):
     try:
         ordergroup_id = int(request.POST.get('ordergroup_id'))
         quantities_data = json.loads(request.POST.get('confirmed_quantities'))
     except (ValueError, TypeError, json.JSONDecodeError):
+        messages.error(request, 'Invalid data format')
         return JsonResponse({'error': 'Invalid data format'}, status=400)
 
     try:
         ordergroup = OrderGroup.objects.get(id=ordergroup_id)
     except OrderGroup.DoesNotExist:
+        messages.error(request, f'OrderGroup with ID {ordergroup_id} does not exist')
         return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
 
     for item_data in quantities_data:
@@ -1103,11 +1315,43 @@ def confirm_all_quantities(request):
             item.confirmed_quantity = quantity
             item.save()
         except (ValueError, TypeError, Order.DoesNotExist):
+            messages.error(request, 'Invalid product data')
             return JsonResponse({'error': 'Invalid product data'}, status=400)
-    ordergroup.status='Accepted'
+
+    # Update the status and the user who approved the order
+    ordergroup.status = 'Accepted'
     ordergroup.approved_by = request.user.first_name
     ordergroup.save()
+
+    messages.success(request, 'Confirmed quantities updated successfully')
     return JsonResponse({'success': 'Confirmed quantities updated successfully'})
+
+# @require_POST
+# def confirm_all_quantities(request):
+#     try:
+#         ordergroup_id = int(request.POST.get('ordergroup_id'))
+#         quantities_data = json.loads(request.POST.get('confirmed_quantities'))
+#     except (ValueError, TypeError, json.JSONDecodeError):
+#         return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+#     try:
+#         ordergroup = OrderGroup.objects.get(id=ordergroup_id)
+#     except OrderGroup.DoesNotExist:
+#         return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+
+#     for item_data in quantities_data:
+#         try:
+#             item_id = int(item_data['productId'])
+#             quantity = int(item_data['quantity'])
+#             item = ordergroup.orders.get(id=item_id)
+#             item.confirmed_quantity = quantity
+#             item.save()
+#         except (ValueError, TypeError, Order.DoesNotExist):
+#             return JsonResponse({'error': 'Invalid product data'}, status=400)
+#     ordergroup.status='Accepted'
+#     ordergroup.approved_by = request.user.first_name
+#     ordergroup.save()
+#     return JsonResponse({'success': 'Confirmed quantities updated successfully'})
 
 
 @require_POST
@@ -1116,11 +1360,13 @@ def issue_quantities(request):
         ordergroup_id = int(request.POST.get('ordergroup_id'))
         quantities_data = json.loads(request.POST.get('issued_quantities'))
     except (ValueError, TypeError, json.JSONDecodeError):
+        messages.error(request, 'Invalid data format')
         return JsonResponse({'error': 'Invalid data format'}, status=400)
 
     try:
         ordergroup = OrderGroup.objects.get(id=ordergroup_id)
     except OrderGroup.DoesNotExist:
+        messages.error(request, f'OrderGroup with ID {ordergroup_id} does not exist')
         return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
 
     for item_data in quantities_data:
@@ -1128,6 +1374,7 @@ def issue_quantities(request):
             item_id = int(item_data['productId'])
             quantity = int(item_data['quantity'])
             product = ordergroup.orders.get(id=item_id)
+
             if product.is_book:
                 store_book = Store.objects.get(books=product.books)
                 difference = quantity - product.issued_quantity
@@ -1148,36 +1395,115 @@ def issue_quantities(request):
             product.issued_quantity = quantity
             product.save()
         except (ValueError, TypeError, Order.DoesNotExist):
+            messages.error(request, 'Invalid product data')
             return JsonResponse({'error': 'Invalid product data'}, status=400)
+        except Store.DoesNotExist:
+            messages.error(request, 'Store item not found')
+            return JsonResponse({'error': 'Store item not found'}, status=400)
         except ValidationError as e:
+            messages.error(request, str(e))
             return JsonResponse({'error': str(e)}, status=400)
 
     ordergroup.status = 'Complete'
     ordergroup.save()
-    return JsonResponse({'success': 'issued quantities updated successfully'})
 
+    messages.success(request, 'Issued quantities updated successfully')
+    return JsonResponse({'success': 'Issued quantities updated successfully'})
 
-@require_POST
+# @require_POST
+# def issue_quantities(request):
+#     try:
+#         ordergroup_id = int(request.POST.get('ordergroup_id'))
+#         quantities_data = json.loads(request.POST.get('issued_quantities'))
+#     except (ValueError, TypeError, json.JSONDecodeError):
+#         return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+#     try:
+#         ordergroup = OrderGroup.objects.get(id=ordergroup_id)
+#     except OrderGroup.DoesNotExist:
+#         return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+
+#     for item_data in quantities_data:
+#         try:
+#             item_id = int(item_data['productId'])
+#             quantity = int(item_data['quantity'])
+#             product = ordergroup.orders.get(id=item_id)
+#             if product.is_book:
+#                 store_book = Store.objects.get(books=product.books)
+#                 difference = quantity - product.issued_quantity
+#                 new_quantity = store_book.quantity - difference
+#                 if new_quantity < 0:
+#                     raise ValidationError('Store quantity cannot be negative.')
+#                 store_book.quantity = new_quantity
+#                 store_book.save()
+#             elif product.is_item:
+#                 store_item = Store.objects.get(items=product.items)
+#                 difference = quantity - product.issued_quantity
+#                 new_quantity = store_item.quantity - difference
+#                 if new_quantity < 0:
+#                     raise ValidationError('Store quantity cannot be negative.')
+#                 store_item.quantity = new_quantity
+#                 store_item.save()
+
+#             product.issued_quantity = quantity
+#             product.save()
+#         except (ValueError, TypeError, Order.DoesNotExist):
+#             return JsonResponse({'error': 'Invalid product data'}, status=400)
+#         except ValidationError as e:
+#             return JsonResponse({'error': str(e)}, status=400)
+
+#     ordergroup.status = 'Complete'
+#     ordergroup.save()
+#     return JsonResponse({'success': 'issued quantities updated successfully'})
+
 def remove_order(request):
-    # Get the product ID from the POST data
+    # Get the product ID and ordergroup ID from the POST data
     product_id = request.POST.get('product_id')
     ordergroup_id = int(request.POST.get('ordergroup_id'))
+
     try:
         ordergroup = OrderGroup.objects.get(id=ordergroup_id)
     except OrderGroup.DoesNotExist:
+        messages.error(request, f'OrderGroup with ID {ordergroup_id} does not exist')
         return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+
     # Retrieve the order to be removed
-    print(ordergroup.orders.count())
     order_to_remove = get_object_or_404(Order, id=product_id)
+
     if ordergroup.orders.count() == 1:
         order_to_remove.delete()
         ordergroup.delete()
+        messages.success(request, 'Order removed successfully')
         return JsonResponse({'success': True, 'redirect': 'store/orders?p=wechi'})
     else:
         order_to_remove.delete()
-        # Perform the removal logic, you can customize this based on your needs
+        messages.success(request, 'Order removed successfully')
+        return redirect(request.META.get('HTTP_REFERER', 'index'))
+    
     # Return a JSON response indicating success
-    return JsonResponse({'message': 'Order removed successfully'})
+    return JsonResponse({'success': True})
+
+# @require_POST
+# def remove_order(request):
+#     # Get the product ID from the POST data
+#     product_id = request.POST.get('product_id')
+#     ordergroup_id = int(request.POST.get('ordergroup_id'))
+#     try:
+#         ordergroup = OrderGroup.objects.get(id=ordergroup_id)
+#     except OrderGroup.DoesNotExist:
+#         return JsonResponse({'error': f'OrderGroup with ID {ordergroup_id} does not exist'}, status=404)
+#     # Retrieve the order to be removed
+#     print(ordergroup.orders.count())
+#     order_to_remove = get_object_or_404(Order, id=product_id)
+#     if ordergroup.orders.count() == 1:
+#         order_to_remove.delete()
+#         ordergroup.delete()
+#         return JsonResponse({'success': True, 'redirect': 'store/orders?p=wechi'})
+#     else:
+#         order_to_remove.delete()
+#         # Perform the removal logic, you can customize this based on your needs
+#     # Return a JSON response indicating success
+#     return JsonResponse({'message': 'Order removed successfully'})
 
 
 

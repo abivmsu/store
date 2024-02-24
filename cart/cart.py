@@ -100,6 +100,7 @@ class Cart():
         return total
 
     def calculate_totals(self):
+        overall_total = 0
         for product_key, product_data in self.cart.items():
             product_id, product_type = product_key.split('_')
 
@@ -116,9 +117,9 @@ class Cart():
             total = product_data['quantity'] * product_data['price'] 
             tax_price = total * (float( product_data['tax'])/100)
             total_price = total + tax_price
+            overall_total += total_price
         # Calculate overall total
-        #overall_total = sum(product_data['quantity'] * product_data['price'] for product_data in self.cart.values())
-        overall_total = sum(total_price for product_data in self.cart.values())
+        #overall_total = sum(total_price for product_data in self.cart.values())
 
         return overall_total
     

@@ -20,7 +20,7 @@
             <div class="row no-gutters mb-4">
                 <div class="col-md-4 text-center">
                     
-                    <img src="{{ product.image.url }}" class="img-fluid rounded mt-3 mb-3" id="modal-image" style="max-height: 300px;" alt="Product Image">
+                    <img src="{{ product.image.url }}" class="img-fluid rounded mt-3 mb-3" id="modal-image" style="max-height: 300px; max-width:300px;" alt="Product Image">
                 </div>
                 <div class="col-md-8">
                     <div class="text-left">
@@ -82,7 +82,7 @@
     });
 
     // Check if button pressed
-    $(document).on('click', '#add-list', function(e){
+    {% comment %} $(document).on('click', '#add-list', function(e){
         e.preventDefault();
 
         // Retrieve values from form fields
@@ -110,6 +110,13 @@
                 success: function(json){
                     console.log(json.qty)
                     document.getElementById("list_quantity").textContent = json.qty
+                    // Display a success message
+                    var productType = $('#type').val();
+                    if (productType === 'book') {
+                        window.location.href = '{% url 'book_store' %}';
+                    } else if (productType === 'item') {
+                        window.location.href = '{% url 'item_store' %}';
+                    }
                 },
                 error: function(xhr, errmsg, err){
                     console.log(err);
@@ -120,49 +127,214 @@
             alert('Please select unit and enter price before adding to the list.');
         }
     });
+     {% endcomment %}
     
-    $(document).on('click', '#aadd-list', function(e){
+     $(document).on('click', '#add-list', function(e) {
         e.preventDefault();
+    
         // Retrieve values from form fields
-        var unit = $('#id_unit').val();
-        var quantity = $('#id_quantity').val();
-        var productt_quantity = {{ product_quantity }} // Ensure product_quntity is rendered as an integer
-        console.log(productt_quantity)
-        console.log(quantity)
-        if (unit) {
-            if (parseInt(quantity) <= productt_quantity) { // Ensure quantity is parsed as an integer
-                // Quantity is within or equal to available quantity, proceed with AJAX call
-                $.ajax({
-                    type: 'POST',
-                    url: '{% url 'list_add' %}',
-                    data: {
-                        product_id: $('#aadd-list').val(),
-                        product_type: $('#type').val(),
-                        product_quantity: $('#id_quantity').val(),
-                        product_unit: unit,
-                        product_subunit: $('#id_subunit').val(),
-                        product_subunit_quantity: $('#id_subunit_quantity').val(),
-                        csrfmiddlewaretoken: '{{ csrf_token }}',
-                        action: 'post'
-                    },
-                    success: function(json){
-                        console.log(json.qty)
-                        document.getElementById("list_quantity").textContent = json.qty
-                    },
-                    error: function(xhr, errmsg, err){
-                        console.log(err);
+        var unit = $('#id_unit').val().trim();
+        var price = parseFloat($('#id_price').val());
+        var unitField = $('#id_unit');
+        var priceField = $('#id_price');
+        
+        var quantity = $('#id_quantity').val().trim();
+        var quantityField = $('#id_quantity');
+        var subunit = $('#id_subunit').val().trim();
+        var subunitField = $('#id_subunit');
+        var subunitQuantityField = $('#id_subunit_quantity');
+        var subunitQuantity = $('#id_subunit_quantity').val().trim();
+    
+        // Check if unit and price are selected/entered
+        if (unit && !isNaN(price) && quantity > 0 && subunit && subunitQuantity > 0) {
+            // If unit and price are selected/entered, proceed with AJAX call
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'list_add' %}',
+                data: {
+                    product_id: $('#add-list').val(),
+                    product_type: $('#type').val(),
+                    product_quantity: $('#id_quantity').val(),
+                    product_unit: unit,
+                    product_price: price,
+                    product_subunit: $('#id_subunit').val(),
+                    product_subunit_quantity: $('#id_subunit_quantity').val(),
+                    product_tax: $('#id_tax').val(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'post'
+                },
+                success: function(json) {
+                    if (json && json.qty !== undefined) {
+                        $('#list_quantity').text(json.qty);
+                        var productType = $('#type').val();
+                        if (productType === 'book') {
+                            window.location.href = '{% url 'book_store' %}';
+                        } else if (productType === 'item') {
+                            window.location.href = '{% url 'item_store' %}';
+                        }
+                    } else {
+                        messages.error('{{"Invalid response from server."}}'); // Assuming you're using Django's messages framework
+              
                     }
-                });
+                },
+                error: function(xhr, errmsg, err) {
+                    showError('Error occurred while processing your request. Please try again later.');
+                    console.log(xhr.status + ": " + xhr.responseText); // Log detailed error message
+                }
+            });
+        }else {
+            // Show error message next to the input field
+            if (!unit ) {
+                showInputError(unitField, 'Please select a unit.');
+                alertify.error('Please select a unit.');
             } else {
-                // Quantity exceeds available quantity, show alert
-                alert('Quantity exceeds available quantity.');
+                hideInputError(unitField);
             }
-        } else {
-            // If unit is not selected, display an alert message
-            alert('Please select unit before adding to the list.');
+            if (!subunit ) {
+                showInputError(subunitField, 'Please select a Sub_unit.');
+                alertify.error('Please select a Sub_unit.');
+            } else {
+                hideInputError(subunitField);
+            }
+    
+            if (isNaN(price) || price < 0) {
+                showInputError(priceField, 'Please enter a price.');
+                alertify.error('Please enter a price.');
+            } else {
+                hideInputError(priceField);
+            }
+            if (isNaN(quantity) || quantity <= 0) {
+                showInputError(quantityField, 'Please enter Quantity.');
+                alertify.error('Please enter Quantity.');
+            } else {
+                hideInputError(quantityField);
+            }
+            if (isNaN(subunitQuantity) || subunitQuantity <= 0) {
+                showInputError(subunitQuantityField, 'Please enter Quantity.');
+                alertify.error('Please enter Sub_Quantity.');
+            } else {
+                hideInputError(subunitQuantityField);
+            }
+            
         }
     });
     
+    function showInputError(inputField, message) {
+        // Show error message next to the input field
+        inputField.addClass('is-invalid');
+        inputField.next('.invalid-feedback').text(message).show();
+    }
+    
+    function hideInputError(inputField) {
+        // Hide error message and remove validation styling
+        inputField.removeClass('is-invalid');
+        inputField.next('.invalid-feedback').text('').hide();
+    }
+    
+    function showError(message) {
+        // Display error message using Alertify
+        alertify.alert('Error', message);
+    }
+    
+    
+     $(document).on('click', '#aadd-list', function(e){
+        e.preventDefault();
+        // Retrieve values from form fields
+        var unit = $('#id_unit').val().trim();
+        var quantity = parseInt($('#id_quantity').val().trim());
+        var subunit = $('#id_subunit').val().trim();
+        var subunitQuantity = $('#id_subunit_quantity').val().trim();
+        var unitField = $('#id_unit');
+        var quantityField = $('#id_quantity');
+        var subunitField = $('#id_subunit');
+        var subunitQuantityField = $('#id_subunit_quantity');
+    
+        var productt_quantity = parseInt('{{ product_quantity }}');
+        if (unit && quantity > 0  && subunit && subunitQuantity > 0 && parseInt(subunitQuantity) <= productt_quantity)
+        {   
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'list_add' %}',
+                data: {
+                    product_id: $('#aadd-list').val(),
+                    product_type: $('#type').val(),
+                    product_quantity: $('#id_quantity').val(),
+                    product_unit: unit,
+                    product_subunit: $('#id_subunit').val(),
+                    product_subunit_quantity: $('#id_subunit_quantity').val(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'post'
+                },
+                success: function(json){
+                    if (json && json.qty !== undefined) {
+                        $('#list_quantity').text(json.qty);
+                        var productType = $('#type').val();
+                        if (productType === 'book') {
+                            window.location.href = '{% url 'book_store' %}';
+                        } else if (productType === 'item') {
+                            window.location.href = '{% url 'item_store' %}';
+                        }
+                    } else {
+                        messages.error('{{"Invalid response from server."}}'); // Assuming you're using Django's messages framework
+              
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    showError('Error occurred while processing your request. Please try again later.');
+                    console.log(xhr.status + ": " + xhr.responseText); // Log detailed error message
+                }
+            });
+        
+        } else {
+            // Show error message next to the input field
+            if (!unit ) {
+                showInputError(unitField, 'Please select a unit.');
+                alertify.error('Please select a unit.');
+            } else {
+                hideInputError(unitField);
+            }
+            if (!subunit ) {
+                showInputError(subunitField, 'Please select a Sub_unit.');
+                alertify.error('Please select a Sub_unit.');
+            } else {
+                hideInputError(subunitField);
+            }
+    
+            if (isNaN(quantity) || quantity <= 0) {
+                showInputError(quantityField, 'Please enter Quantity.');
+                alertify.error('Please enter Quantity.');
+            } else {
+                hideInputError(quantityField);
+            }
+            if (isNaN(subunitQuantity) || subunitQuantity <= 0) {
+                showInputError(subunitQuantityField, 'Please enter Sub Quantity.');
+                alertify.error('Please enter Sub_Quantity.');
+            } else {
+                hideInputError(subunitQuantityField);
+            }
+            if (parseInt(subunitQuantity) > productt_quantity) {
+                showInputError(subunitQuantityField, 'Please reduce Quantity.');
+                alertify.warning('Please reduce the quantity.');
+            }
+        }
+    });
+
+    function showInputError(inputField, message) {
+        // Show error message next to the input field
+        inputField.addClass('is-invalid');
+        inputField.next('.invalid-feedback').text(message).show();
+    }
+    
+    function hideInputError(inputField) {
+        // Hide error message and remove validation styling
+        inputField.removeClass('is-invalid');
+        inputField.next('.invalid-feedback').text('').hide();
+    }
+    
+    function showError(message) {
+        // Display error message using Alertify
+        alertify.alert('Error', message);
+    }
     {% comment %} $(document).on('click', '#aadd-list', function(e){
         e.preventDefault();
         // Retrieve values from form fields
