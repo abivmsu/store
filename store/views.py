@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden,JsonResponse , HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed 
 from django.urls import reverse
-from .forms import StoreForm, CategoryForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm, ProductGivenForm, ProductGivenDetailForm, StaffOrderForm
+from .forms import StoreForm, BookForm, ItemForm, StoreForm, OrderForm, ProductForm, ProductGivenForm, ProductGivenDetailForm, StaffOrderForm
 from django.contrib import messages
 from .models import *
 from cart.cart import Cart

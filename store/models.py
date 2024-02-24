@@ -7,16 +7,8 @@ import datetime
 from django.contrib.auth.models import User
 # Create your models here.
 
-#category of items
-class Category (models.Model):
-  name = models.CharField( max_length=50)
-
-  def __str__(self):
-        return self.name
-    
 
 class Book(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
     description = models.CharField(max_length=200, default="", blank=True,null=True)
     image = models.ImageField(upload_to = 'uploads/book/') 
     book_name = models.CharField(max_length=100)
@@ -28,7 +20,6 @@ class Book(models.Model):
         return self.book_name
         
 class Item(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
     description = models.CharField(max_length=200, default="", blank=True,null=True)
     image = models.ImageField(upload_to = 'uploads/item/') 
     item_name = models.CharField(max_length=100)
