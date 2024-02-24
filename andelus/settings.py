@@ -77,6 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'andelus.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = ['https://storeandelus.up.railway.app','http://127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
