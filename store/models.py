@@ -5,12 +5,13 @@ from django.db import models
 from django.db import models
 import datetime
 from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
 # Create your models here.
 
 
 class Book(models.Model):
     description = models.CharField(max_length=200, default="", blank=True,null=True)
-    image = models.ImageField(upload_to = 'uploads/book/') 
+    image = CloudinaryField('andelus/store/book/') 
     book_name = models.CharField(max_length=100)
     grade = models.CharField(max_length=50)
     pages = models.IntegerField()
@@ -21,7 +22,7 @@ class Book(models.Model):
         
 class Item(models.Model):
     description = models.CharField(max_length=200, default="", blank=True,null=True)
-    image = models.ImageField(upload_to = 'uploads/item/') 
+    image = CloudinaryField('andelus/store/item/') 
     item_name = models.CharField(max_length=100)
     
     def __str__(self):
