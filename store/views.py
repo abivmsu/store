@@ -25,7 +25,7 @@ from reportlab.pdfbase import pdfmetrics
 
 def books_report(request):
     # Register the font
-    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    # pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
     pdfmetrics.registerFont(TTFont('Nyala', 'static/fonts/Nyala.ttf'))
     # Sample data from your models
     books = Store.objects.filter(is_book = True)
@@ -146,7 +146,7 @@ def books_report(request):
 def items_report(request):
     
     # Register the font
-    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    # pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
     
     pdfmetrics.registerFont(TTFont('Nyala', 'static/fonts/Nyala.ttf'))
 

@@ -1,212 +1,283 @@
 {%load static%}
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
 
     <title>Andelus</title>
 
     <!-- Custom fonts for this template-->
-    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
+      href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+      rel="stylesheet"
+    />
 
     <!-- Custom styles for this template-->
-    
-    <!-- CSS alertify-->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
 
-    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <!-- CSS alertify-->
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"
+    />
+
+    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet" />
+    <link
+      href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}"
+      rel="stylesheet"
+    />
     <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
 
-
-<style>
-    .product-card {
+    <style>
+      .product-card {
         border: 1px solid #dee2e6;
         border-radius: 10px;
         margin-bottom: 20px;
         overflow: hidden;
         background-color: #ffffff;
-    }
+      }
 
-    .image-container {
+      .image-container {
         height: 200px; /* Fixed height for the image container */
         overflow: hidden;
-    }
+      }
 
-    .product-image {
+      .product-image {
         width: 100%; /* Make the image responsive within the container */
         height: auto; /* Maintain aspect ratio */
-    }
+      }
 
-    .product-details {
+      .product-details {
         padding: 20px;
-    }
+      }
 
-    .confirm-section {
+      .confirm-section {
         padding: 20px;
         border-top: 1px solid #dee2e6;
         background-color: #f8f9fa;
-    }
+      }
 
-    .product-item {
+      .product-item {
         margin-bottom: 5px; /* Add margin between each product item */
         padding: 5px; /* Add padding to each product item */
         border-radius: 5px; /* Add border radius to round corners */
         background-color: #f8f9fa; /* Set background color */
         border: 1px solid #ced4da; /* Add border */
-    }
-    
-    /* Styling for the badge */
-    .badge {
+      }
+
+      /* Styling for the badge */
+      .badge {
         margin-right: 5px;
         font-size: 0.8em;
         padding: 0.2em 0.5em;
         border-radius: 3px;
-    }
+      }
 
-    /* Styling for the book badge */
-    .badge-book {
+      /* Styling for the book badge */
+      .badge-book {
         background-color: #007bff;
-    }
+      }
 
-    /* Styling for the item badge */
-    .badge-item {
+      /* Styling for the item badge */
+      .badge-item {
         background-color: #28a745;
-    }
-</style>
+      }
+    </style>
+  </head>
 
-</head>
-
-<body id="page-top">
-
+  <body id="page-top">
+    <div id="loadingSpinner" class="spinner-overlay">
+      <i class="fas fa-spinner spinner"></i>
+    </div>
     <!-- Page Wrapper -->
     <div id="wrapper">
+      {% include "sidebar.html" %}
 
-        {% include "sidebar.html" %}
+      <!-- Content Wrapper -->
+      <div id="content-wrapper" class="d-flex flex-column">
+        <!-- Main Content -->
+        <div id="content">
+          <!-- Topbar -->
+          {% include "navbar.html" %}
+          <!-- End of Topbar -->
 
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-
-            <!-- Main Content -->
-            <div id="content">
-
-                <!-- Topbar -->
-                   {% include "navbar.html" %}
-                <!-- End of Topbar -->
-
-                {% comment %} {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button> </div>
-                {% endfor %}
-            {% endif %}  {% endcomment %}
-                <!-- Begin Page Content -->
-                {%block content%}
-                
-
-
-                {%endblock%}
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Andelus School 2024</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
-
+          {% comment %} {% if messages %} {% for message in messages %}
+          <div
+            class="alert alert-warning alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+          </div>
+          {% endfor %} {% endif %} {% endcomment %}
+          <!-- Begin Page Content -->
+          {%block content%} {%endblock%}
+          <!-- /.container-fluid -->
         </div>
-        <!-- End of Content Wrapper -->
+        <!-- End of Main Content -->
 
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+          <div class="container my-auto">
+            <div class="copyright text-center my-auto">
+              <span>Copyright &copy; Andelus School 2024</span>
+            </div>
+          </div>
+        </footer>
+        <!-- End of Footer -->
+      </div>
+      <!-- End of Content Wrapper -->
     </div>
     <!-- End of Page Wrapper -->
 
     <!-- Scroll to Top Button-->
     <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
+      <i class="fas fa-angle-up"></i>
     </a>
 
     <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to lgout?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">If so, Clcik Logout Button</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-info" href="{% url 'log_out' %}">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<!-- Modal -->
-<div class="modal fade" id="comingSoonModal" tabindex="-1" role="dialog" aria-labelledby="comingSoonModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div
+      class="modal fade"
+      id="logoutModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title" id="comingSoonModalLabel">Coming Soon</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <p class="h5"><i class="fas fa-exclamation-triangle text-warning"></i> በቅርቡ ይጠብቁን! </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
-            </div>   
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">
+              Are you sure you want to lgout?
+            </h5>
+            <button
+              class="close"
+              type="button"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">If so, Clcik Logout Button</div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <a class="btn btn-info" href="{% url 'log_out' %}">Logout</a>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Report Modal -->
-<div class="modal fade" id="generate_report" tabindex="-1" role="dialog" aria-labelledby="generateReportModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="comingSoonModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="comingSoonModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="generateReportModalLabel">Generate Report</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to generate and download the report?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <a href="#" id="download_report_btn" class="btn btn-info">Generate and Download</a>
-            </div>
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title" id="comingSoonModalLabel">Coming Soon</h5>
+            <button
+              type="button"
+              class="close text-white"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body text-center">
+            <p class="h5">
+              <i class="fas fa-exclamation-triangle text-warning"></i> በቅርቡ
+              ይጠብቁን!
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-info" data-dismiss="modal">
+              Close
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
+    <!-- Report Modal -->
+    <div
+      class="modal fade"
+      id="generate_report"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="generateReportModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="generateReportModalLabel">
+              Generate Report
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to generate and download the report?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <a href="#" id="download_report_btn" class="btn btn-info"
+              >Generate and Download</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
 
-    {% comment %} <script src="{% static 'js/custom.js' %}"></script>  {% endcomment %}
+    {% comment %}
+    <script src="{% static 'js/custom.js' %}"></script>
+    {% endcomment %}
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -224,27 +295,26 @@
     <script src="{% static 'js/demo/chart-area-demo.js' %}"></script>
     <script src="{% static 'js/demo/chart-pie-demo.js' %}"></script>
 
-     <!-- Page level plugins -->
-     <script src="{% static 'vendor/datatables/jquery.dataTables.min.js ' %}"></script>
-     <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js '%}"></script>
- 
-     <!-- Page level custom scripts -->
-     <script src="{% static 'js/demo/datatables-demo.js '%}"></script>
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js ' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js '%}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js '%}"></script>
 
     {% comment %} Alertfify flashs messages {% endcomment %}
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
     <script>
-        alertify.set('notifier','position', 'top-right');
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                alertify.error('{{ message }}');
-            {% elif message.tags == 'warning' %}
-            alertify.warning('{{ message }}');
-            {% elif message.tags == 'success' %}
-            alertify.success('{{ message }}');
-            {% endif %}
-        {% endfor %}
+      alertify.set('notifier','position', 'top-right');
+      {% for message in messages %}
+          {% if message.tags == 'error' %}
+              alertify.error('{{ message }}');
+          {% elif message.tags == 'warning' %}
+          alertify.warning('{{ message }}');
+          {% elif message.tags == 'success' %}
+          alertify.success('{{ message }}');
+          {% endif %}
+      {% endfor %}
     </script>
-</body>
-
+  </body>
 </html>
